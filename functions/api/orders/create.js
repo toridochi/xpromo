@@ -17,11 +17,13 @@ export async function onRequestPost({ request, env }) {
   const created_at = new Date().toISOString();
   const updated_at = created_at;
 
-  const stmt = await env.DB.prepare(
-    `INSERT INTO orders 
+  // 🔥 D1 Pages GIỐNG SQLITE: BẮT BUỘC phải RETURNING id
+  const stmt = env.DB.prepare(`
+    INSERT INTO orders
       (post_link, package, contact, note, price, currency, pay_address, status, public_token, created_at, updated_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-  ).bind(
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    RETURNING id;
+  `).bind(
     post_link,
     pkg,
     contact,
@@ -35,11 +37,11 @@ export async function onRequestPost({ request, env }) {
     updated_at
   );
 
-  const result = await stmt.run();
+  const row = await stmt.first(); // Lấy dòng có id
 
   return Response.json({
     order: {
-      id: result.lastRowId,
+      id: row.id,            // ⭐ Luôn có ID
       public_token,
       price
     }
