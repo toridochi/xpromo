@@ -12,7 +12,6 @@ body {
     margin: 0;
     padding: 0;
 }
-
 .header {
     text-align: center;
     padding: 24px;
@@ -21,7 +20,6 @@ body {
     font-size: 22px;
     font-weight: bold;
 }
-
 .container {
     max-width: 680px;
     margin: 25px auto;
@@ -30,24 +28,20 @@ body {
     border-radius: 14px;
     box-shadow: 0 6px 22px rgba(0,0,0,0.08);
 }
-
 .section-title {
     font-size: 20px;
     font-weight: bold;
     margin-bottom: 14px;
 }
-
 .qr-box {
     text-align: center;
     margin: 20px 0;
 }
-
 .qr-box img {
     width: 260px;
     height: auto;
     border-radius: 10px;
 }
-
 .wallet-box {
     background: #fafafa;
     padding: 15px;
@@ -55,7 +49,6 @@ body {
     border: 1px solid #ddd;
     margin-top: 10px;
 }
-
 .wallet-address {
     font-family: monospace;
     font-size: 16px;
@@ -66,7 +59,6 @@ body {
     border-radius: 8px;
     border: 1px solid #ddd;
 }
-
 .pay-btn {
     width: 100%;
     padding: 14px;
@@ -78,7 +70,6 @@ body {
     cursor: pointer;
     margin-top: 25px;
 }
-
 .footer {
     text-align: center;
     margin: 35px 0 20px;
@@ -96,8 +87,8 @@ body {
 
     <h2 class="section-title">Order Payment</h2>
 
-    <p><b>Order ID:</b> <span id="order_id"></span></p>
-    <p><b>Total Amount:</b> <span id="total_amount"></span> USDT</p>
+    <p><b>Order ID:</b> <span id="order_id">Loading...</span></p>
+    <p><b>Total Amount:</b> <span id="total_amount">Loading...</span> USDT</p>
 
     <div class="qr-box">
         <img src="qr-usdt.jpg" alt="USDT Payment QR">
@@ -121,14 +112,33 @@ body {
     Website created by Toridochi
 </div>
 
-
 <script>
 function getQuery(name) {
     return new URLSearchParams(window.location.search).get(name);
 }
 
-document.getElementById("order_id").innerText = getQuery("id");
-document.getElementById("total_amount").innerText = getQuery("amount");
+async function loadOrder() {
+    const id = getQuery("id");
+    const t  = getQuery("t");
+
+    if (!id || !t) {
+        document.getElementById("order_id").innerText = "Invalid link";
+        return;
+    }
+
+    const res = await fetch(`/api/orders/status?id=${id}&t=${t}`);
+    const data = await res.json();
+
+    if (!data.order) {
+        document.getElementById("order_id").innerText = "Order not found";
+        return;
+    }
+
+    document.getElementById("order_id").innerText = data.order.id;
+    document.getElementById("total_amount").innerText = data.order.price;
+}
+
+loadOrder();
 
 function copyWallet() {
     const text = document.getElementById("wallet_addr").innerText;
@@ -136,35 +146,10 @@ function copyWallet() {
     alert("Wallet address copied!");
 }
 
-//  ✅ FIXED — gửi xác nhận lên API confirm
-async function confirmPaid() {
+function confirmPaid() {
     const id = getQuery("id");
-    const token = getQuery("t");
-
-    if (!id || !token) {
-        alert("Missing order ID or token.");
-        return;
-    }
-
-    // Gửi request xác nhận thanh toán
-    const res = await fetch("/api/orders/confirm", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-            id: parseInt(id),
-            public_token: token
-        })
-    });
-
-    const data = await res.json();
-
-    if (!data.ok) {
-        alert("Error confirming payment: " + (data.error || "Unknown error."));
-        return;
-    }
-
-    // Redirect đúng format (Không bị undefined nữa)
-    window.location.href = `/order?id=${data.order.id}&t=${data.order.public_token}`;
+    const t  = getQuery("t");
+    window.location.href = `/order.html?id=${id}&t=${t}`;
 }
 </script>
 
