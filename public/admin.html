@@ -130,7 +130,11 @@
 
 
 <script>
-    const ADMIN_KEY = "Phamuyen@123.1"; // 🔥 ĐỔI THÀNH KEY THẬT CỦA BẠN
+const ADMIN_KEY = localStorage.getItem("ADMIN_TOKEN");
+
+if (!ADMIN_KEY) {
+    window.location.href = "/admin-login.html";
+}
 
     async function loadOrders() {
         const res = await fetch("/api/admin/orders", {
