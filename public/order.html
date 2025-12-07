@@ -59,7 +59,7 @@
             color: #b58b00;
         }
 
-        .status-paid {
+        .status-paid_waiting {
             background: #cfe2ff;
             color: #084298;
         }
@@ -119,12 +119,14 @@
     <div class="footer">Website created by Toridochi</div>
 
 <script>
+
+    // Mapping status → text + color
     function translateStatus(s) {
         switch (s) {
             case "pending_payment":
-                return { text: "Awaiting Payment Confirmation", css: "status-pending" };
-            case "paid":
-                return { text: "Order Confirmed", css: "status-paid" };
+                return { text: "Waiting for Payment", css: "status-pending" };
+            case "paid_waiting_confirmation":
+                return { text: "Waiting for Seller Confirmation", css: "status-paid_waiting" };
             case "completed":
                 return { text: "Completed", css: "status-completed" };
             default:
@@ -142,12 +144,13 @@
             return;
         }
 
-        const res = await fetch(`/api/orders/status?id=${id}&t=${token}`);
-        let data;
+        // ❗ FIXED — đúng biến t, không phải token
+        const res = await fetch(`/api/orders/status?id=${id}&t=${t}`);
 
+        let data;
         try {
             data = await res.json();
-        } catch (e) {
+        } catch (err) {
             document.getElementById("statusBox").innerText = "Error loading order.";
             return;
         }
@@ -161,11 +164,13 @@
         document.getElementById("amount").innerText = data.order.price;
         document.getElementById("contact").innerText = data.order.contact;
 
+        // STATUS
         const st = translateStatus(data.order.status);
         const statusEl = document.getElementById("statusBox");
         statusEl.innerText = st.text;
         statusEl.className = `status-box ${st.css}`;
 
+        // POSTS
         const postsBox = document.getElementById("posts");
         postsBox.innerHTML = "";
 
@@ -175,19 +180,20 @@
         } catch (e) {}
 
         posts.forEach((p, i) => {
-            const el = document.createElement("div");
-            el.style.marginBottom = "12px";
+            const box = document.createElement("div");
+            box.style.marginBottom = "14px";
 
-            el.innerHTML = `
+            box.innerHTML = `
                 <div><b>Post #${i + 1}</b></div>
                 <a href="${p.link}" target="_blank">${p.link}</a><br>
                 ${p.views ? `Views: ${p.views}<br>` : ""}
                 ${p.comments ? `Comments: ${p.comments}<br>` : ""}
                 ${p.likes ? `Likes: ${p.likes}<br>` : ""}
-                ${p.combo && p.combo.count ? `Combos: ${p.combo.count}<br>` : ""}
+                ${p.count ? `Combo Count: ${p.count}<br>` : ""}
+                ${p.price ? `Price: ${p.price} USDT<br>` : ""}
             `;
 
-            postsBox.appendChild(el);
+            postsBox.appendChild(box);
         });
     }
 
