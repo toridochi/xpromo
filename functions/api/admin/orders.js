@@ -1,20 +1,18 @@
 import { jwtVerify } from "jose";
 
-export async function onRequestPost({ request, env }) {
+export async function onRequestGet({ request, env }) {
   const auth = request.headers.get("Authorization") || "";
   const token = auth.replace("Bearer ", "");
 
   try {
     await jwtVerify(token, new TextEncoder().encode(env.ADMIN_JWT_SECRET));
-  } catch {
+  } catch (e) {
     return Response.json({ error: "Unauthorized" }, { status: 403 });
   }
 
-  const { id, status } = await request.json();
+  const list = await env.DB.prepare(
+    "SELECT * FROM orders ORDER BY created_at DESC"
+  ).all();
 
-  await env.DB.prepare(
-    "UPDATE orders SET status = ?, updated_at = ? WHERE id = ?"
-  ).bind(status, new Date().toISOString(), id).run();
-
-  return Response.json({ ok: true });
+  return Response.json(list.results);
 }
