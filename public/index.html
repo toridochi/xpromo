@@ -191,7 +191,7 @@ function addPostBox() {
             <input type="number" id="comment_amount_${postCount}" min="10" value="10" 
                 oninput="validateMin(${postCount}, 'comment'); updateTotal();">
             <div class="note-small" id="comment_note_${postCount}">
-                10 comments = $3. +1 comment = $0.3<br>
+                10 comments = $3. +1 = $0.3<br>
                 <b>Comments come from verified accounts, and the content will be reasonably relevant to your post.</b>
             </div>
         </div>
@@ -205,13 +205,14 @@ function addPostBox() {
             <input type="number" id="like_amount_${postCount}" min="100" value="100" 
                 oninput="validateMin(${postCount}, 'like'); updateTotal();">
             <div class="note-small" id="like_note_${postCount}">
-                100 likes = $2. +10 likes = $0.2
+                100 likes = $2. +10 = $0.2
             </div>
         </div>
 
         <!-- COMBO -->
         <div class="checkbox">
-            <input type="checkbox" id="combo_${postCount}" onchange="toggleService(${postCount}, 'combo')"> Combo (300 likes + 30 comments + 3000 views)
+            <input type="checkbox" id="combo_${postCount}" onchange="toggleService(${postCount}, 'combo')"> 
+            Combo (300 likes + 30 comments + 3000 views)
         </div>
         <div id="combo_wrap_${postCount}" class="service-options" style="display:none;">
             <label>Number of Combos</label>
@@ -241,12 +242,7 @@ function validateMin(id, type) {
     const note = document.getElementById(`${type}_note_${id}`);
     const value = parseInt(input.value || 0);
 
-    const MIN = {
-        view: 5000,
-        comment: 10,
-        like: 100,
-        combo: 1
-    };
+    const MIN = { view: 5000, comment: 10, like: 100, combo: 1 };
 
     if (value < MIN[type]) {
         input.style.border = "2px solid red";
@@ -266,36 +262,24 @@ function updateTotal() {
     for (let i = 1; i <= postCount; i++) {
         if (!document.getElementById(`post_${i}`)) continue;
 
-        // Views
         if (document.getElementById(`view_${i}`).checked) {
             let v = parseInt(document.getElementById(`view_amount_${i}`).value);
-            if (v >= 5000) {
-                total += 1 + ((v - 5000) / 1000) * 0.2;
-            }
+            if (v >= 5000) total += 1 + ((v - 5000) / 1000) * 0.2;
         }
 
-        // Comments
         if (document.getElementById(`comment_${i}`).checked) {
             let c = parseInt(document.getElementById(`comment_amount_${i}`).value);
-            if (c >= 10) {
-                total += 3 + (c - 10) * 0.3;
-            }
+            if (c >= 10) total += 3 + (c - 10) * 0.3;
         }
 
-        // Likes
         if (document.getElementById(`like_${i}`).checked) {
             let l = parseInt(document.getElementById(`like_amount_${i}`).value);
-            if (l >= 100) {
-                total += 2 + ((l - 100) / 10) * 0.2;
-            }
+            if (l >= 100) total += 2 + ((l - 100) / 10) * 0.2;
         }
 
-        // Combo
         if (document.getElementById(`combo_${i}`).checked) {
             let cb = parseInt(document.getElementById(`combo_amount_${i}`).value);
-            if (cb >= 1) {
-                total += cb * 14;
-            }
+            if (cb >= 1) total += cb * 14;
         }
     }
 
@@ -304,19 +288,18 @@ function updateTotal() {
 }
 
 async function submitOrder() {
-    // Global validation
+
     for (let i = 1; i <= postCount; i++) {
+
         const hasService =
             document.getElementById(`view_${i}`).checked ||
             document.getElementById(`comment_${i}`).checked ||
             document.getElementById(`like_${i}`).checked ||
             document.getElementById(`combo_${i}`).checked;
 
-        if (!hasService) {
+        if (!hasService)
             return alert(`Post #${i}: You must select at least one service.`);
-        }
 
-        // Min check
         if (document.getElementById(`view_${i}`).checked &&
             !validateMin(i, "view"))
             return alert(`Post #${i}: Views must be >= 5000`);
@@ -341,11 +324,15 @@ async function submitOrder() {
 
         posts.push({
             link,
-            views: document.getElementById(`view_${i}`).checked ? parseInt(view_amount_${i}.value) : 0,
-            comments: document.getElementById(`comment_${i}`).checked ? parseInt(comment_amount_${i}.value) : 0,
-            likes: document.getElementById(`like_${i}`).checked ? parseInt(like_amount_${i}.value) : 0,
-            combo: document.getElementById(`combo_${i}`).checked ?
-                { count: parseInt(combo_amount_${i}.value), price: 14 } : 0
+            views: document.getElementById(`view_${i}`).checked 
+                ? parseInt(document.getElementById(`view_amount_${i}`).value) : 0,
+            comments: document.getElementById(`comment_${i}`).checked 
+                ? parseInt(document.getElementById(`comment_amount_${i}`).value) : 0,
+            likes: document.getElementById(`like_${i}`).checked 
+                ? parseInt(document.getElementById(`like_amount_${i}`).value) : 0,
+            combo: document.getElementById(`combo_${i}`).checked 
+                ? { count: parseInt(document.getElementById(`combo_amount_${i}`).value), price: 14 }
+                : 0
         });
     }
 
