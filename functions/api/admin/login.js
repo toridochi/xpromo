@@ -1,17 +1,36 @@
-import { SignJWT } from "jose";
-
 export async function onRequestPost({ request, env }) {
-  const { key } = await request.json();
-  const correct = env.ADMIN_JWT_SECRET;
+    const { password } = await request.json();
+    if (!password) return new Response("Missing password", { status: 400 });
 
-  if (key !== correct) {
-    return Response.json({ error: "Unauthorized" }, { status: 403 });
-  }
+    if (password !== env.ADMIN_PASSWORD) {
+        return new Response("Invalid password", { status: 401 });
+    }
 
-  const jwt = await new SignJWT({ admin: true })
-    .setProtectedHeader({ alg: "HS256" })
-    .setExpirationTime("6h")
-    .sign(new TextEncoder().encode(correct));
+    // Generate HMAC token
+    const timestamp = Date.now().toString();
+    const raw = `admin:${timestamp}`;
 
-  return Response.json({ token: jwt });
+    const key = await crypto.subtle.importKey(
+        "raw",
+        new TextEncoder().encode(env.ADMIN_SECRET),
+        { name: "HMAC", hash: "SHA-256" },
+        false,
+        ["sign"]
+    );
+
+    const signature = await crypto.subtle.sign(
+        "HMAC",
+        key,
+        new TextEncoder().encode(raw)
+    );
+
+    const token = btoa(`${raw}:${bufferToHex(signature)}`);
+
+    return Response.json({ token });
+}
+
+function bufferToHex(buffer) {
+    return [...new Uint8Array(buffer)]
+        .map(b => b.toString(16).padStart(2, "0"))
+        .join("");
 }
