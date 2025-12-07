@@ -3,93 +3,188 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Order Service</title>
+<title>Create Order</title>
 
 <style>
-    body {
-        font-family: Arial, sans-serif;
-        background: #f5f5f5;
-        margin: 0;
-        padding: 20px;
-    }
-    .container {
-        max-width: 480px;
-        margin: auto;
-        background: white;
-        padding: 25px;
-        border-radius: 12px;
-        box-shadow: 0 4px 14px rgba(0,0,0,0.1);
-    }
-    h2 {
-        margin-top: 0;
-        text-align: center;
-    }
-    label {
-        display: block;
-        margin: 12px 0 6px;
-        font-weight: bold;
-    }
-    input, select, textarea {
-        width: 100%;
-        padding: 10px;
-        border-radius: 8px;
-        border: 1px solid #ccc;
-        margin-bottom: 10px;
-    }
-    button {
-        width: 100%;
-        padding: 12px;
-        background: #0077ff;
-        border: none;
-        border-radius: 8px;
-        color: white;
-        font-size: 16px;
-        cursor: pointer;
-        margin-top: 10px;
-    }
-    #result {
-        margin-top: 20px;
-        padding: 15px;
-        background: #e7f3ff;
-        border-radius: 8px;
-        display: none;
-    }
+body {
+    font-family: Arial, sans-serif;
+    background: #f5f5f5;
+    padding: 20px;
+}
+.container {
+    max-width: 500px;
+    margin: auto;
+    background: white;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.1);
+}
+h2 {
+    text-align: center;
+    margin-top: 0;
+}
+label {
+    font-weight: bold;
+    margin-top: 12px;
+    display: block;
+}
+input, textarea {
+    width: 100%;
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+}
+.service-box {
+    margin-top: 15px;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background: #fafafa;
+}
+button {
+    width: 100%;
+    padding: 12px;
+    background: #0077ff;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    margin-top: 20px;
+    cursor: pointer;
+}
+#result {
+    margin-top: 20px;
+    padding: 15px;
+    border-radius: 8px;
+    background: #e7f3ff;
+    display: none;
+}
+.price-note {
+    font-size: 13px;
+    color: #555;
+}
 </style>
-
 </head>
 <body>
 
 <div class="container">
-    <h2>Create Order</h2>
 
-    <label>Post Link</label>
-    <input id="post_link" placeholder="https://x.com/...">
+<h2>Create Order</h2>
 
-    <label>Package</label>
-    <select id="package">
-        <option value="basic">Basic - $5</option>
-        <option value="pro">Pro - $10</option>
-        <option value="vip">VIP - $20</option>
-    </select>
+<label>Post Link</label>
+<input id="post_link" placeholder="https://x.com/...">
 
-    <label>Contact (Email or X handle)</label>
-    <input id="contact">
+<label>Select Services</label>
 
-    <label>Note (Optional)</label>
-    <textarea id="note"></textarea>
+<div class="service-box">
+    <input type="checkbox" id="sv_view" onchange="toggleViewBox()"> Views<br>
+    <div id="view_box" style="display:none; margin-top:10px;">
+        <label>Number of Views</label>
+        <input id="view_amount" type="number" min="5000" value="5000" oninput="updateTotal()">
+        <div class="price-note">5000 views = $1. Each +1000 = $0.2</div>
+    </div>
+</div>
 
-    <button onclick="createOrder()">Create Order</button>
+<div class="service-box">
+    <input type="checkbox" id="sv_comment" onchange="toggleCommentBox()"> Comments<br>
+    <div id="comment_box" style="display:none; margin-top:10px;">
+        <label>Number of Comments</label>
+        <input id="comment_amount" type="number" min="10" value="10" oninput="updateTotal()">
+        <div class="price-note">10 comments = $3. +1 comment = $0.3<br>All comments from verified & relevant.</div>
+    </div>
+</div>
 
-    <div id="result"></div>
+<div class="service-box">
+    <input type="checkbox" id="sv_like" onchange="toggleLikeBox()"> Likes<br>
+    <div id="like_box" style="display:none; margin-top:10px;">
+        <label>Number of Likes</label>
+        <input id="like_amount" type="number" min="100" value="100" oninput="updateTotal()">
+        <div class="price-note">100 likes = $2. +10 likes = $0.2</div>
+    </div>
+</div>
+
+<label>Contact (Email or X handle)</label>
+<input id="contact">
+
+<label>Note (Optional)</label>
+<textarea id="note"></textarea>
+
+<h3>Total: <span id="total_price">0</span> USD</h3>
+
+<button onclick="createOrder()">Create Order</button>
+
+<div id="result"></div>
+
 </div>
 
 <script>
+
+function toggleViewBox() {
+    document.getElementById("view_box").style.display =
+        document.getElementById("sv_view").checked ? "block" : "none";
+    updateTotal();
+}
+
+function toggleCommentBox() {
+    document.getElementById("comment_box").style.display =
+        document.getElementById("sv_comment").checked ? "block" : "none";
+    updateTotal();
+}
+
+function toggleLikeBox() {
+    document.getElementById("like_box").style.display =
+        document.getElementById("sv_like").checked ? "block" : "none";
+    updateTotal();
+}
+
+function updateTotal() {
+    let total = 0;
+
+    // Views pricing
+    if (document.getElementById("sv_view").checked) {
+        let v = parseInt(document.getElementById("view_amount").value || 0);
+        if (v >= 5000) {
+            total += 1; // base price
+            total += Math.max(0, (v - 5000) / 1000) * 0.2;
+        }
+    }
+
+    // Comment pricing
+    if (document.getElementById("sv_comment").checked) {
+        let c = parseInt(document.getElementById("comment_amount").value || 0);
+        if (c >= 10) {
+            total += 3; // base price
+            total += Math.max(0, (c - 10)) * 0.3;
+        }
+    }
+
+    // Like pricing
+    if (document.getElementById("sv_like").checked) {
+        let l = parseInt(document.getElementById("like_amount").value || 0);
+        if (l >= 100) {
+            total += 2; // base price
+            total += Math.max(0, (l - 100) / 10) * 0.2;
+        }
+    }
+
+    document.getElementById("total_price").innerText = total.toFixed(2);
+    return total;
+}
+
 async function createOrder() {
+    const total = updateTotal();
+
+    const services = {
+        views: document.getElementById("sv_view").checked ? parseInt(document.getElementById("view_amount").value) : 0,
+        comments: document.getElementById("sv_comment").checked ? parseInt(document.getElementById("comment_amount").value) : 0,
+        likes: document.getElementById("sv_like").checked ? parseInt(document.getElementById("like_amount").value) : 0
+    };
+
     const body = {
         post_link: document.getElementById("post_link").value,
-        package: document.getElementById("package").value,
+        package: "custom",
         contact: document.getElementById("contact").value,
-        note: document.getElementById("note").value
+        note: JSON.stringify({ services }),
+        price: total
     };
 
     const res = await fetch("/api/orders/create", {
@@ -100,26 +195,16 @@ async function createOrder() {
 
     const data = await res.json();
 
-    const div = document.getElementById("result");
-    div.style.display = "block";
-    div.innerHTML = `
+    document.getElementById("result").style.display = "block";
+    document.getElementById("result").innerHTML = `
         <h3>Order Created</h3>
         <p><b>Price:</b> ${data.price} ${data.currency}</p>
         <p><b>Pay to:</b> ${data.pay_address}</p>
         <p><b>Your tracking link:</b><br>
         <a href="${data.tracking_url}">${data.tracking_url}</a></p>
-        <button onclick="confirmPayment(${data.order_id}, '${data.tracking_url.split('t=')[1]}')">I Sent Payment</button>
     `;
 }
 
-async function confirmPayment(orderId, token) {
-    await fetch("/api/orders/confirm", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ order_id: orderId, public_token: token })
-    });
-    alert("Payment confirmed! You can check your order status via the tracking link.");
-}
 </script>
 
 </body>
