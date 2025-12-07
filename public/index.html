@@ -159,10 +159,8 @@ button.submit-btn {
 <script>
 let postCount = 0;
 
-// Add new post item
 function addPostBox() {
     postCount++;
-
     const div = document.createElement("div");
     div.className = "post-box";
     div.id = "post_" + postCount;
@@ -178,8 +176,8 @@ function addPostBox() {
         </div>
         <div id="view_wrap_${postCount}" class="service-options" style="display:none;">
             <label>Number of Views</label>
-            <input type="number" id="view_amount_${postCount}" min="5000" value="5000" oninput="updateTotal()">
-            <div class="note">5000 views = $1. +1000 views = $0.2</div>
+            <input type="number" id="view_amount_${postCount}" min="5000" value="5000" oninput="validateMin(${postCount}, 'view'); updateTotal();">
+            <div class="note" id="view_note_${postCount}">5000 views = $1. +1000 = $0.2</div>
         </div>
 
         <div class="checkbox">
@@ -187,8 +185,8 @@ function addPostBox() {
         </div>
         <div id="comment_wrap_${postCount}" class="service-options" style="display:none;">
             <label>Number of Comments</label>
-            <input type="number" id="comment_amount_${postCount}" min="10" value="10" oninput="updateTotal()">
-            <div class="note">10 comments = $3. +1 comment = $0.3</div>
+            <input type="number" id="comment_amount_${postCount}" min="10" value="10" oninput="validateMin(${postCount}, 'comment'); updateTotal();">
+            <div class="note" id="comment_note_${postCount}">10 comments = $3. +1 comment = $0.3</div>
         </div>
 
         <div class="checkbox">
@@ -196,8 +194,8 @@ function addPostBox() {
         </div>
         <div id="like_wrap_${postCount}" class="service-options" style="display:none;">
             <label>Number of Likes</label>
-            <input type="number" id="like_amount_${postCount}" min="100" value="100" oninput="updateTotal()">
-            <div class="note">100 likes = $2. +10 likes = $0.2</div>
+            <input type="number" id="like_amount_${postCount}" min="100" value="100" oninput="validateMin(${postCount}, 'like'); updateTotal();">
+            <div class="note" id="like_note_${postCount}">100 likes = $2. +10 likes = $0.2</div>
         </div>
     `;
 
@@ -205,13 +203,37 @@ function addPostBox() {
     updateTotal();
 }
 
-addPostBox(); // add first by default
-
+addPostBox();
 
 function toggleService(id, type) {
     document.getElementById(`${type}_wrap_${id}`).style.display =
         document.getElementById(`${type}_${id}`).checked ? "block" : "none";
     updateTotal();
+}
+
+function validateMin(id, type) {
+    const input = document.getElementById(`${type}_amount_${id}`);
+    const note = document.getElementById(`${type}_note_${id}`);
+
+    const value = parseInt(input.value || 0);
+
+    const MIN = {
+        view: 5000,
+        comment: 10,
+        like: 100
+    };
+
+    if (value < MIN[type]) {
+        input.style.border = "2px solid red";
+        note.style.color = "red";
+        note.innerText = `Minimum is ${MIN[type]}`;
+        return false;
+    }
+
+    input.style.border = "1px solid #ccc";
+    note.style.color = "#555";
+    note.innerText = note.dataset.default || note.innerText;
+    return true;
 }
 
 function updateTotal() {
@@ -252,28 +274,47 @@ function updateTotal() {
     return total;
 }
 
-
 async function submitOrder() {
 
-    // Collect all posts
-    let posts = [];
-
+    // VALIDATION BEFORE SUBMIT
     for (let i = 1; i <= postCount; i++) {
 
+        if (!document.getElementById(`post_${i}`)) continue;
+
+        // views
+        if (document.getElementById(`view_${i}`).checked &&
+            !validateMin(i, "view"))
+            return alert(`Post #${i}: Views must be >= 5000`);
+
+        // comments
+        if (document.getElementById(`comment_${i}`).checked &&
+            !validateMin(i, "comment"))
+            return alert(`Post #${i}: Comments must be >= 10`);
+
+        // likes
+        if (document.getElementById(`like_${i}`).checked &&
+            !validateMin(i, "like"))
+            return alert(`Post #${i}: Likes must be >= 100`);
+    }
+
+    // collect data
+    let posts = [];
+    for (let i = 1; i <= postCount; i++) {
         const link = document.getElementById(`link_${i}`)?.value;
         if (!link) continue;
 
-        const postData = {
+        posts.push({
             link,
-            views: document.getElementById(`view_${i}`).checked 
-                ? parseInt(document.getElementById(`view_amount_${i}`).value) : 0,
-            comments: document.getElementById(`comment_${i}`).checked 
-                ? parseInt(document.getElementById(`comment_amount_${i}`).value) : 0,
+            views: document.getElementById(`view_${i}`).checked
+                ? parseInt(document.getElementById(`view_amount_${i}`).value)
+                : 0,
+            comments: document.getElementById(`comment_${i}`).checked
+                ? parseInt(document.getElementById(`comment_amount_${i}`).value)
+                : 0,
             likes: document.getElementById(`like_${i}`).checked
-                ? parseInt(document.getElementById(`like_amount_${i}`).value) : 0
-        };
-
-        posts.push(postData);
+                ? parseInt(document.getElementById(`like_amount_${i}`).value)
+                : 0
+        });
     }
 
     const body = {
@@ -291,11 +332,10 @@ async function submitOrder() {
     });
 
     const data = await res.json();
-
     alert("Order created! Tracking link: " + data.tracking_url);
 }
-
 </script>
+
 
 </body>
 </html>
