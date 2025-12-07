@@ -11,7 +11,7 @@ export async function onRequestPost({ request, env }) {
   const now = new Date().toISOString();
 
   const currency = "USDT";
-  const pay_address = "YOUR_WALLET_ADDRESS";
+  const pay_address = "0xfd933e7158371a9466f8bf321934bc99fd7000b2";
 
   await env.DB
     .prepare(
