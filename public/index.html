@@ -8,7 +8,7 @@
 <style>
 body {
     font-family: Arial, sans-serif;
-    background: #f4f6fb;
+    background: #eef2f7;
     margin: 0;
     padding: 0;
 }
@@ -24,11 +24,11 @@ body {
 
 .container {
     max-width: 780px;
-    margin: 30px auto;
+    margin: 25px auto;
     background: white;
     padding: 25px;
     border-radius: 14px;
-    box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+    box-shadow: 0 6px 22px rgba(0,0,0,0.08);
 }
 
 .section-title {
@@ -42,17 +42,17 @@ body {
     background: #fafafa;
     padding: 18px;
     border-radius: 10px;
-    margin-bottom: 18px;
+    margin-bottom: 20px;
 }
 
 .post-box h3 {
-    margin: 0 0 12px 0;
+    margin-top: 0;
 }
 
 label {
     font-weight: bold;
     display: block;
-    margin-top: 10px;
+    margin-top: 12px;
 }
 
 input[type="text"],
@@ -65,8 +65,14 @@ textarea {
     margin-top: 5px;
 }
 
+.note-small {
+    font-size: 13px;
+    color: #555;
+    margin-top: 4px;
+}
+
 .checkbox {
-    margin-top: 10px;
+    margin-top: 14px;
 }
 
 .service-options {
@@ -74,20 +80,14 @@ textarea {
     margin-top: 10px;
 }
 
-.note {
-    font-size: 13px;
-    color: #555;
-    margin-top: 4px;
-}
-
-.total-box {
-    margin-top: 25px;
+.total-row {
+    text-align: right;
     font-size: 20px;
     font-weight: bold;
-    text-align: right;
+    margin-top: 25px;
 }
 
-button.add-post {
+.add-post-btn {
     width: 100%;
     padding: 12px;
     background: #28a745;
@@ -95,11 +95,11 @@ button.add-post {
     font-size: 16px;
     border: 0;
     border-radius: 8px;
-    margin-top: 10px;
+    margin-top: 15px;
     cursor: pointer;
 }
 
-button.submit-btn {
+.submit-btn {
     width: 100%;
     padding: 14px;
     background: #0d6efd;
@@ -113,8 +113,8 @@ button.submit-btn {
 
 .footer {
     text-align: center;
-    margin: 40px 0 20px;
     color: #777;
+    margin: 35px 0 20px;
     font-size: 13px;
 }
 </style>
@@ -122,19 +122,19 @@ button.submit-btn {
 
 <body>
 
-<div class="header">
-    Order X Link Post Engagement
-</div>
+<div class="header">Order X Link Post Engagement</div>
 
 <div class="container">
-    
+
     <h2 class="section-title">Your Post Links</h2>
 
     <div id="posts_wrapper"></div>
 
-    <button class="add-post" onclick="addPostBox()">Add Another Post Link</button>
+    <button class="add-post-btn" onclick="addPostBox()">Add Another Post Link</button>
 
-    <h3 class="total-box">Total: <span id="total_price">0.00</span> USD</h3>
+    <div class="total-row">
+        Total: <span id="total_price">0.00</span> USD
+    </div>
 
     <label>Contact (Email or X handle)</label>
     <input type="text" id="contact">
@@ -142,18 +142,15 @@ button.submit-btn {
     <label>Note (Optional)</label>
     <textarea id="note"></textarea>
 
-    <p class="note">
+    <p class="note-small">
         If you need cheaper bundles, full engagement packages or have any questions, 
         please contact Telegram/X: <b>shuigvn</b> or <b>howhitening</b>.
     </p>
 
     <button class="submit-btn" onclick="submitOrder()">Create Order</button>
-
 </div>
 
-<div class="footer">
-    Website created by Toridochi
-</div>
+<div class="footer">Website created by Toridochi</div>
 
 
 <script>
@@ -161,6 +158,7 @@ let postCount = 0;
 
 function addPostBox() {
     postCount++;
+
     const div = document.createElement("div");
     div.className = "post-box";
     div.id = "post_" + postCount;
@@ -171,31 +169,58 @@ function addPostBox() {
         <label>Post Link</label>
         <input type="text" id="link_${postCount}" placeholder="https://x.com/...">
 
+        <!-- VIEWS -->
         <div class="checkbox">
             <input type="checkbox" id="view_${postCount}" onchange="toggleService(${postCount}, 'view')"> Views
         </div>
         <div id="view_wrap_${postCount}" class="service-options" style="display:none;">
             <label>Number of Views</label>
-            <input type="number" id="view_amount_${postCount}" min="5000" value="5000" oninput="validateMin(${postCount}, 'view'); updateTotal();">
-            <div class="note" id="view_note_${postCount}">5000 views = $1. +1000 = $0.2</div>
+            <input type="number" id="view_amount_${postCount}" min="5000" value="5000" 
+                oninput="validateMin(${postCount}, 'view'); updateTotal();">
+            <div class="note-small" id="view_note_${postCount}">
+                5000 views = $1. +1000 = $0.2
+            </div>
         </div>
 
+        <!-- COMMENTS -->
         <div class="checkbox">
             <input type="checkbox" id="comment_${postCount}" onchange="toggleService(${postCount}, 'comment')"> Comments
         </div>
         <div id="comment_wrap_${postCount}" class="service-options" style="display:none;">
             <label>Number of Comments</label>
-            <input type="number" id="comment_amount_${postCount}" min="10" value="10" oninput="validateMin(${postCount}, 'comment'); updateTotal();">
-            <div class="note" id="comment_note_${postCount}">10 comments = $3. +1 comment = $0.3</div>
+            <input type="number" id="comment_amount_${postCount}" min="10" value="10" 
+                oninput="validateMin(${postCount}, 'comment'); updateTotal();">
+            <div class="note-small" id="comment_note_${postCount}">
+                10 comments = $3. +1 comment = $0.3<br>
+                <b>Comments come from verified accounts, and the content will be reasonably relevant to your post.</b>
+            </div>
         </div>
 
+        <!-- LIKES -->
         <div class="checkbox">
             <input type="checkbox" id="like_${postCount}" onchange="toggleService(${postCount}, 'like')"> Likes
         </div>
         <div id="like_wrap_${postCount}" class="service-options" style="display:none;">
             <label>Number of Likes</label>
-            <input type="number" id="like_amount_${postCount}" min="100" value="100" oninput="validateMin(${postCount}, 'like'); updateTotal();">
-            <div class="note" id="like_note_${postCount}">100 likes = $2. +10 likes = $0.2</div>
+            <input type="number" id="like_amount_${postCount}" min="100" value="100" 
+                oninput="validateMin(${postCount}, 'like'); updateTotal();">
+            <div class="note-small" id="like_note_${postCount}">
+                100 likes = $2. +10 likes = $0.2
+            </div>
+        </div>
+
+        <!-- COMBO -->
+        <div class="checkbox">
+            <input type="checkbox" id="combo_${postCount}" onchange="toggleService(${postCount}, 'combo')"> Combo (300 likes + 30 comments + 3000 views)
+        </div>
+        <div id="combo_wrap_${postCount}" class="service-options" style="display:none;">
+            <label>Number of Combos</label>
+            <input type="number" id="combo_amount_${postCount}" min="1" value="1" 
+                oninput="validateMin(${postCount}, 'combo'); updateTotal();">
+            <div class="note-small" id="combo_note_${postCount}">
+                Each combo includes 300 likes, 30 comments, 3000 views from verified accounts.<br>
+                Price: $14 per combo
+            </div>
         </div>
     `;
 
@@ -214,13 +239,13 @@ function toggleService(id, type) {
 function validateMin(id, type) {
     const input = document.getElementById(`${type}_amount_${id}`);
     const note = document.getElementById(`${type}_note_${id}`);
-
     const value = parseInt(input.value || 0);
 
     const MIN = {
         view: 5000,
         comment: 10,
-        like: 100
+        like: 100,
+        combo: 1
     };
 
     if (value < MIN[type]) {
@@ -232,7 +257,6 @@ function validateMin(id, type) {
 
     input.style.border = "1px solid #ccc";
     note.style.color = "#555";
-    note.innerText = note.dataset.default || note.innerText;
     return true;
 }
 
@@ -240,14 +264,13 @@ function updateTotal() {
     let total = 0;
 
     for (let i = 1; i <= postCount; i++) {
-        if (!document.getElementById("post_" + i)) continue;
+        if (!document.getElementById(`post_${i}`)) continue;
 
         // Views
         if (document.getElementById(`view_${i}`).checked) {
             let v = parseInt(document.getElementById(`view_amount_${i}`).value);
             if (v >= 5000) {
-                total += 1;
-                total += ((v - 5000) / 1000) * 0.2;
+                total += 1 + ((v - 5000) / 1000) * 0.2;
             }
         }
 
@@ -255,8 +278,7 @@ function updateTotal() {
         if (document.getElementById(`comment_${i}`).checked) {
             let c = parseInt(document.getElementById(`comment_amount_${i}`).value);
             if (c >= 10) {
-                total += 3;
-                total += (c - 10) * 0.3;
+                total += 3 + (c - 10) * 0.3;
             }
         }
 
@@ -264,8 +286,15 @@ function updateTotal() {
         if (document.getElementById(`like_${i}`).checked) {
             let l = parseInt(document.getElementById(`like_amount_${i}`).value);
             if (l >= 100) {
-                total += 2;
-                total += ((l - 100) / 10) * 0.2;
+                total += 2 + ((l - 100) / 10) * 0.2;
+            }
+        }
+
+        // Combo
+        if (document.getElementById(`combo_${i}`).checked) {
+            let cb = parseInt(document.getElementById(`combo_amount_${i}`).value);
+            if (cb >= 1) {
+                total += cb * 14;
             }
         }
     }
@@ -275,45 +304,48 @@ function updateTotal() {
 }
 
 async function submitOrder() {
-
-    // VALIDATION BEFORE SUBMIT
+    // Global validation
     for (let i = 1; i <= postCount; i++) {
+        const hasService =
+            document.getElementById(`view_${i}`).checked ||
+            document.getElementById(`comment_${i}`).checked ||
+            document.getElementById(`like_${i}`).checked ||
+            document.getElementById(`combo_${i}`).checked;
 
-        if (!document.getElementById(`post_${i}`)) continue;
+        if (!hasService) {
+            return alert(`Post #${i}: You must select at least one service.`);
+        }
 
-        // views
+        // Min check
         if (document.getElementById(`view_${i}`).checked &&
             !validateMin(i, "view"))
             return alert(`Post #${i}: Views must be >= 5000`);
 
-        // comments
         if (document.getElementById(`comment_${i}`).checked &&
             !validateMin(i, "comment"))
             return alert(`Post #${i}: Comments must be >= 10`);
 
-        // likes
         if (document.getElementById(`like_${i}`).checked &&
             !validateMin(i, "like"))
             return alert(`Post #${i}: Likes must be >= 100`);
+
+        if (document.getElementById(`combo_${i}`).checked &&
+            !validateMin(i, "combo"))
+            return alert(`Post #${i}: Combo must be >= 1`);
     }
 
-    // collect data
     let posts = [];
+
     for (let i = 1; i <= postCount; i++) {
-        const link = document.getElementById(`link_${i}`)?.value;
-        if (!link) continue;
+        const link = document.getElementById(`link_${i}`).value;
 
         posts.push({
             link,
-            views: document.getElementById(`view_${i}`).checked
-                ? parseInt(document.getElementById(`view_amount_${i}`).value)
-                : 0,
-            comments: document.getElementById(`comment_${i}`).checked
-                ? parseInt(document.getElementById(`comment_amount_${i}`).value)
-                : 0,
-            likes: document.getElementById(`like_${i}`).checked
-                ? parseInt(document.getElementById(`like_amount_${i}`).value)
-                : 0
+            views: document.getElementById(`view_${i}`).checked ? parseInt(view_amount_${i}.value) : 0,
+            comments: document.getElementById(`comment_${i}`).checked ? parseInt(comment_amount_${i}.value) : 0,
+            likes: document.getElementById(`like_${i}`).checked ? parseInt(like_amount_${i}.value) : 0,
+            combo: document.getElementById(`combo_${i}`).checked ?
+                { count: parseInt(combo_amount_${i}.value), price: 14 } : 0
         });
     }
 
@@ -332,10 +364,11 @@ async function submitOrder() {
     });
 
     const data = await res.json();
+
     alert("Order created! Tracking link: " + data.tracking_url);
 }
-</script>
 
+</script>
 
 </body>
 </html>
