@@ -1,48 +1,53 @@
 export async function onRequestPost({ request, env }) {
-  const body = await request.json();
-  const { post_link, package: pkg, contact, note } = body;
+    try {
+        const body = await request.json();
 
-  const price =
-    pkg === "basic" ? 5 :
-    pkg === "pro" ? 10 :
-    pkg === "vip" ? 20 : 5;
+        const {
+            post_link,
+            contact,
+            note,
+            price,
+        } = body;
 
-  const token = crypto.randomUUID().replace(/-/g, "");
-  const now = new Date().toISOString();
+        if (!contact || !note || !price) {
+            return new Response(JSON.stringify({ error: "Missing fields" }), { status: 400 });
+        }
 
-  const currency = "USDT";
-  const pay_address = "0xfd933e7158371a9466f8bf321934bc99fd7000b2";
+        const public_token = crypto.randomUUID();
+        const created_at = new Date().toISOString();
+        const updated_at = created_at;
 
-  await env.DB
-    .prepare(
-      `INSERT INTO orders 
-      (post_link, package, contact, note, price, currency, pay_address, status, public_token, created_at, updated_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, 'created', ?, ?, ?)`
-    )
-    .bind(
-      post_link, 
-      pkg, 
-      contact,
-      note || "",
-      price,
-      currency,
-      pay_address,
-      token,
-      now,
-      now
-    )
-    .run();
+        const stmt = `
+            INSERT INTO orders
+            (post_link, package, contact, note, price, currency, pay_address, status, public_token, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `;
 
-  const result = await env.DB
-    .prepare("SELECT last_insert_rowid() as id")
-    .first();
+        const params = [
+            post_link,
+            body.package || "multi",
+            contact,
+            note,
+            price,
+            "USDT",
+            "0xef84aad573bc7c530cb397147ee12f773f9ea570",
+            "pending_payment",
+            public_token,
+            created_at,
+            updated_at,
+        ];
 
-  return Response.json({
-    order_id: result.id,
-    price,
-    currency,
-    pay_address,
-    tracking_url: `/order.html?id=${result.id}&t=${token}`
-  });
+        const result = await env.DB.prepare(stmt).bind(...params).run();
+
+        return Response.json({
+            success: true,
+            order: {
+                id: result.meta.last_row_id,
+                public_token
+            }
+        });
+
+    } catch (err) {
+        return new Response(JSON.stringify({ error: err.toString() }), { status: 500 });
+    }
 }
-
