@@ -289,17 +289,50 @@ function updateTotal() {
 
 async function submitOrder() {
 
-    for (let i = 1; i <= postCount; i++) {
+    const contact = document.getElementById("contact").value.trim();
+    if (!contact) {
+        alert("Please enter your contact (Email or X handle).");
+        document.getElementById("contact").style.border = "2px solid red";
+        return;
+    } else {
+        document.getElementById("contact").style.border = "1px solid #ccc";
+    }
 
+    const twitterRegex = /^https?:\/\/(x|twitter)\.com\/([A-Za-z0-9_]{1,50})\/status\/(\d+)$/;
+
+    for (let i = 1; i <= postCount; i++) {
+        const linkField = document.getElementById(`link_${i}`);
+        const link = linkField.value.trim();
+
+        // Check empty
+        if (!link) {
+            alert(`Post #${i}: Please enter a valid X/Twitter post link.`);
+            linkField.style.border = "2px solid red";
+            return;
+        }
+
+        // Check correct Twitter/X format
+        if (!twitterRegex.test(link)) {
+            alert(`Post #${i}: Invalid post link format. Must be a valid X/Twitter status URL.`);
+            linkField.style.border = "2px solid red";
+            return;
+        }
+
+        linkField.style.border = "1px solid #ccc";
+
+        // Check at least one service selected
         const hasService =
             document.getElementById(`view_${i}`).checked ||
             document.getElementById(`comment_${i}`).checked ||
             document.getElementById(`like_${i}`).checked ||
             document.getElementById(`combo_${i}`).checked;
 
-        if (!hasService)
-            return alert(`Post #${i}: You must select at least one service.`);
+        if (!hasService) {
+            alert(`Post #${i}: You must select at least one service.`);
+            return;
+        }
 
+        // MIN checks
         if (document.getElementById(`view_${i}`).checked &&
             !validateMin(i, "view"))
             return alert(`Post #${i}: Views must be >= 5000`);
@@ -317,13 +350,12 @@ async function submitOrder() {
             return alert(`Post #${i}: Combo must be >= 1`);
     }
 
+    // Build posts array
     let posts = [];
 
     for (let i = 1; i <= postCount; i++) {
-        const link = document.getElementById(`link_${i}`).value;
-
         posts.push({
-            link,
+            link: document.getElementById(`link_${i}`).value.trim(),
             views: document.getElementById(`view_${i}`).checked 
                 ? parseInt(document.getElementById(`view_amount_${i}`).value) : 0,
             comments: document.getElementById(`comment_${i}`).checked 
@@ -331,7 +363,10 @@ async function submitOrder() {
             likes: document.getElementById(`like_${i}`).checked 
                 ? parseInt(document.getElementById(`like_amount_${i}`).value) : 0,
             combo: document.getElementById(`combo_${i}`).checked 
-                ? { count: parseInt(document.getElementById(`combo_amount_${i}`).value), price: 14 }
+                ? { 
+                    count: parseInt(document.getElementById(`combo_amount_${i}`).value), 
+                    price: 14 
+                }
                 : 0
         });
     }
@@ -339,7 +374,7 @@ async function submitOrder() {
     const body = {
         post_link: "MULTI",
         package: "multi",
-        contact: document.getElementById("contact").value,
+        contact,
         note: JSON.stringify({ posts }),
         price: updateTotal()
     };
@@ -354,6 +389,7 @@ async function submitOrder() {
 
     alert("Order created! Tracking link: " + data.tracking_url);
 }
+
 
 </script>
 
