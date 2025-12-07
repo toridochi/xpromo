@@ -1,20 +1,14 @@
-import { jwtVerify } from "jose";
+import { verifyAdmin } from "./verify";
 
 export async function onRequestPost({ request, env }) {
-  const auth = request.headers.get("Authorization") || "";
-  const token = auth.replace("Bearer ", "");
+    const admin = await verifyAdmin(request, env);
+    if (!admin) return new Response("Unauthorized", { status: 403 });
 
-  try {
-    await jwtVerify(token, new TextEncoder().encode(env.ADMIN_JWT_SECRET));
-  } catch {
-    return Response.json({ error: "Unauthorized" }, { status: 403 });
-  }
+    const { id, status } = await request.json();
 
-  const { id, status } = await request.json();
+    await env.DB.prepare(
+        "UPDATE orders SET status = ? WHERE id = ?"
+    ).bind(status, id).run();
 
-  await env.DB.prepare(
-    "UPDATE orders SET status = ?, updated_at = ? WHERE id = ?"
-  ).bind(status, new Date().toISOString(), id).run();
-
-  return Response.json({ ok: true });
+    return Response.json({ ok: true });
 }
