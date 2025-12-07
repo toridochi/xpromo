@@ -142,7 +142,7 @@
             return;
         }
 
-        const res = await fetch(`/api/orders/status?id=${id}&t=${t}`);
+        const res = await fetch(`/api/orders/status?id=${id}&t=${token}`);
         let data;
 
         try {
