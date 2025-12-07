@@ -1,8 +1,8 @@
 {
-  "name": "xpromo-v2",
+  "name": "xpromo",
   "version": "1.0.0",
   "type": "module",
   "dependencies": {
-    "jose": "^4.14.4"
+    "jose": "^5.2.0"
   }
 }
