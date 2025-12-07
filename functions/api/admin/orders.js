@@ -1,6 +1,10 @@
 export async function onRequestGet({ request, env }) {
   const auth = request.headers.get("Authorization");
-  if (auth !== "Bearer ADMIN_SECRET_KEY") {
+
+  // Lấy key thật từ Cloudflare Environment
+  const realKey = env.Phamuyen@123.1;
+
+  if (auth !== `Bearer ${realKey}`) {
     return new Response("Unauthorized", { status: 403 });
   }
 
@@ -10,4 +14,3 @@ export async function onRequestGet({ request, env }) {
 
   return Response.json(list.results);
 }
-
