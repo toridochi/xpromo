@@ -165,6 +165,10 @@ function addPostBox() {
 
     div.innerHTML = `
         <h3>Post #${postCount}</h3>
+<button onclick="removePost(${postCount})" style="float:right;background:#dc3545;color:white;border:0;padding:4px 8px;border-radius:6px;cursor:pointer;margin-top:-30px;">
+   X
+</button>
+<div style="clear:both;"></div>
 
         <label>Post Link</label>
         <input type="text" id="link_${postCount}" placeholder="https://x.com/...">
@@ -300,27 +304,33 @@ async function submitOrder() {
 
     const twitterRegex = /^https?:\/\/(x|twitter)\.com\/([A-Za-z0-9_]{1,50})\/status\/(\d+)$/;
 
+    let posts = [];
+    let valid = true;
+
     for (let i = 1; i <= postCount; i++) {
+
+        const box = document.getElementById(`post_${i}`);
+        if (!box) continue; // Skip deleted posts
+
         const linkField = document.getElementById(`link_${i}`);
         const link = linkField.value.trim();
 
-        // Check empty
+        // must have link
         if (!link) {
             alert(`Post #${i}: Please enter a valid X/Twitter post link.`);
             linkField.style.border = "2px solid red";
             return;
         }
 
-        // Check correct Twitter/X format
+        // must be correct twitter/x format
         if (!twitterRegex.test(link)) {
-            alert(`Post #${i}: Invalid post link format. Must be a valid X/Twitter status URL.`);
+            alert(`Post #${i}: Invalid X/Twitter post URL.`);
             linkField.style.border = "2px solid red";
             return;
         }
 
         linkField.style.border = "1px solid #ccc";
 
-        // Check at least one service selected
         const hasService =
             document.getElementById(`view_${i}`).checked ||
             document.getElementById(`comment_${i}`).checked ||
@@ -332,30 +342,10 @@ async function submitOrder() {
             return;
         }
 
-        // MIN checks
-        if (document.getElementById(`view_${i}`).checked &&
-            !validateMin(i, "view"))
-            return alert(`Post #${i}: Views must be >= 5000`);
+        // Min checks handled by validateMin()
 
-        if (document.getElementById(`comment_${i}`).checked &&
-            !validateMin(i, "comment"))
-            return alert(`Post #${i}: Comments must be >= 10`);
-
-        if (document.getElementById(`like_${i}`).checked &&
-            !validateMin(i, "like"))
-            return alert(`Post #${i}: Likes must be >= 100`);
-
-        if (document.getElementById(`combo_${i}`).checked &&
-            !validateMin(i, "combo"))
-            return alert(`Post #${i}: Combo must be >= 1`);
-    }
-
-    // Build posts array
-    let posts = [];
-
-    for (let i = 1; i <= postCount; i++) {
         posts.push({
-            link: document.getElementById(`link_${i}`).value.trim(),
+            link,
             views: document.getElementById(`view_${i}`).checked 
                 ? parseInt(document.getElementById(`view_amount_${i}`).value) : 0,
             comments: document.getElementById(`comment_${i}`).checked 
@@ -387,12 +377,23 @@ async function submitOrder() {
 
     const data = await res.json();
 
+    // redirect to payment page
     window.location.href = `/payment.html?id=${data.order.id}&t=${data.order.public_token}&amount=${updateTotal()}`;
-
-
 }
 
 
+function removePost(id) {
+    if (id === 1) {
+        alert("Post #1 cannot be removed.");
+        return;
+    }
+
+    const postBox = document.getElementById(`post_${id}`);
+    if (postBox) {
+        postBox.remove();
+        updateTotal();
+    }
+}
 </script>
 
 </body>
