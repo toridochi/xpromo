@@ -1,157 +1,198 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Your Order Status</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Order Details</title>
 
-<style>
-body {
-    font-family: Arial, sans-serif;
-    background: #eef2f7;
-    margin: 0;
-    padding: 0;
-}
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #eef3f8;
+            margin: 0;
+            padding: 0;
+        }
 
-.header {
-    background: #0d6efd;
-    color: white;
-    padding: 20px;
-    text-align: center;
-    font-size: 22px;
-    font-weight: bold;
-}
+        .header {
+            background: #007bff;
+            color: white;
+            padding: 18px;
+            font-size: 22px;
+            text-align: center;
+            font-weight: bold;
+        }
 
-.container {
-    max-width: 700px;
-    background: #fff;
-    margin: 30px auto;
-    padding: 25px;
-    border-radius: 15px;
-    box-shadow: 0 6px 20px rgba(0,0,0,0.08);
-}
+        .container {
+            max-width: 700px;
+            background: white;
+            margin: 30px auto;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+        }
 
-.section-title {
-    font-size: 20px;
-    font-weight: 600;
-    margin-top: 20px;
-}
+        .row { margin-bottom: 18px; }
 
-.status-box {
-    padding: 10px;
-    border-radius: 8px;
-    margin-top: 10px;
-    font-weight: bold;
-}
+        .label {
+            font-weight: bold;
+            color: #222;
+            margin-bottom: 4px;
+            display: block;
+        }
 
-.status-pending {
-    background: #fff3cd;
-    color: #856404;
-}
+        .value {
+            font-size: 16px;
+            color: #444;
+        }
 
-.status-processing {
-    background: #cce5ff;
-    color: #004085;
-}
+        /* STATUS COLORS */
+        .status-box {
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: bold;
+            display: inline-block;
+            margin-top: 6px;
+        }
 
-.status-completed {
-    background: #d4edda;
-    color: #155724;
-}
+        .status-pending {
+            background: #fff3cd;
+            color: #b58b00;
+        }
 
-.post-box {
-    background: #f8f9fa;
-    padding: 12px;
-    border-radius: 10px;
-    margin-top: 10px;
-    border-left: 4px solid #0d6efd;
-}
+        .status-paid {
+            background: #cfe2ff;
+            color: #084298;
+        }
 
-.footer {
-    text-align: center;
-    margin-top: 40px;
-    color: #777;
-    font-size: 13px;
-}
-</style>
+        .status-completed {
+            background: #d1e7dd;
+            color: #0f5132;
+        }
 
+        .status-unknown {
+            background: #e2e3e5;
+            color: #41464b;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            color: #777;
+            font-size: 14px;
+        }
+
+        a { color: #007bff; word-break: break-all; }
+    </style>
 </head>
+
 <body>
 
-<div class="header">Order Details</div>
+    <div class="header">Order Details</div>
 
-<div class="container">
+    <div class="container">
+        <div class="row">
+            <span class="label">Order ID:</span>
+            <span id="orderId" class="value">...</span>
+        </div>
 
-    <div id="order_info">Loading...</div>
+        <div class="row">
+            <span class="label">Status:</span>
+            <span id="statusBox" class="status-box status-unknown">Loading...</span>
+        </div>
 
-</div>
+        <div class="row">
+            <span class="label">Total Amount:</span>
+            <span id="amount" class="value">...</span> USDT
+        </div>
 
-<div class="footer">
-    Website created by Toridochi
-</div>
+        <div class="row">
+            <span class="label">Contact:</span>
+            <span id="contact" class="value">...</span>
+        </div>
+
+        <div class="row">
+            <span class="label">Posts:</span>
+            <div id="posts"></div>
+        </div>
+    </div>
+
+    <div class="footer">Website created by Toridochi</div>
 
 <script>
-function getQuery(key) {
-    return new URLSearchParams(window.location.search).get(key);
-}
-
-async function loadOrder() {
-    const id = getQuery("id");
-    const t = getQuery("t");
-
-    const res = await fetch(`/api/orders/status?id=${id}&t=${t}`);
-    const data = await res.json();
-
-    if (!data.success) {
-        document.getElementById("order_info").innerHTML =
-            `<div style='color:red;'>Error loading order: ${data.error}</div>`;
-        return;
+    function translateStatus(s) {
+        switch (s) {
+            case "pending_payment":
+                return { text: "Awaiting Payment Confirmation", css: "status-pending" };
+            case "paid":
+                return { text: "Order Confirmed", css: "status-paid" };
+            case "completed":
+                return { text: "Completed", css: "status-completed" };
+            default:
+                return { text: s, css: "status-unknown" };
+        }
     }
 
-    const o = data.order;
-    const posts = JSON.parse(o.note).posts;
+    async function loadOrder() {
+        const url = new URL(window.location.href);
+        const id = url.searchParams.get("id");
+        const t = url.searchParams.get("t");
 
-    let statusClass = "status-pending";
-    if (o.status === "processing") statusClass = "status-processing";
-    if (o.status === "completed") statusClass = "status-completed";
+        if (!id || !t) {
+            document.getElementById("statusBox").innerText = "Invalid tracking link.";
+            return;
+        }
 
-    let html = `
-        <div class="section-title">Order ID: ${o.id}</div>
-        <div class="section-title">Status:</div>
-        <div class="status-box ${statusClass}">${o.status}</div>
+        const res = await fetch(`/api/orders/status?id=${id}&t=${t}`);
+        let data;
 
-        <div class="section-title">Total Amount:</div>
-        <div><b>${o.price} USDT</b></div>
+        try {
+            data = await res.json();
+        } catch (e) {
+            document.getElementById("statusBox").innerText = "Error loading order.";
+            return;
+        }
 
-        <div class="section-title">Contact:</div>
-        <div>${o.contact}</div>
+        if (!data.order) {
+            document.getElementById("statusBox").innerText = "Order not found.";
+            return;
+        }
 
-        <div class="section-title">Posts:</div>
-    `;
+        document.getElementById("orderId").innerText = data.order.id;
+        document.getElementById("amount").innerText = data.order.price;
+        document.getElementById("contact").innerText = data.order.contact;
 
-    posts.forEach((p, index) => {
-        html += `
-        <div class="post-box">
-            <b>Post #${index+1}</b><br>
-            <a href="${p.link}" target="_blank">${p.link}</a><br><br>
+        const st = translateStatus(data.order.status);
+        const statusEl = document.getElementById("statusBox");
+        statusEl.innerText = st.text;
+        statusEl.className = `status-box ${st.css}`;
 
-            ${p.views ? "Views: " + p.views + "<br>" : ""}
-            ${p.comments ? "Comments: " + p.comments + "<br>" : ""}
-            ${p.likes ? "Likes: " + p.likes + "<br>" : ""}
-            ${p.combo ? "Combos: " + p.combo.count + "<br>" : ""}
-        </div>`;
-    });
+        const postsBox = document.getElementById("posts");
+        postsBox.innerHTML = "";
 
-    document.getElementById("order_info").innerHTML = html;
-}
+        let posts = [];
+        try {
+            posts = JSON.parse(data.order.note).posts;
+        } catch (e) {}
 
-// auto-refresh status every 10 seconds
-setInterval(loadOrder, 10000);
+        posts.forEach((p, i) => {
+            const el = document.createElement("div");
+            el.style.marginBottom = "12px";
 
-loadOrder();
+            el.innerHTML = `
+                <div><b>Post #${i + 1}</b></div>
+                <a href="${p.link}" target="_blank">${p.link}</a><br>
+                ${p.views ? `Views: ${p.views}<br>` : ""}
+                ${p.comments ? `Comments: ${p.comments}<br>` : ""}
+                ${p.likes ? `Likes: ${p.likes}<br>` : ""}
+                ${p.combo && p.combo.count ? `Combos: ${p.combo.count}<br>` : ""}
+            `;
 
+            postsBox.appendChild(el);
+        });
+    }
+
+    loadOrder();
 </script>
 
 </body>
 </html>
-
