@@ -1,1 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Your Order Status</title>
+
+<style>
+body {
+    font-family: Arial, sans-serif;
+    background: #eef2f7;
+    margin: 0;
+    padding: 0;
+}
+
+.header {
+    background: #0d6efd;
+    color: white;
+    padding: 20px;
+    text-align: center;
+    font-size: 22px;
+    font-weight: bold;
+}
+
+.container {
+    max-width: 700px;
+    background: #fff;
+    margin: 30px auto;
+    padding: 25px;
+    border-radius: 15px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+}
+
+.section-title {
+    font-size: 20px;
+    font-weight: 600;
+    margin-top: 20px;
+}
+
+.status-box {
+    padding: 10px;
+    border-radius: 8px;
+    margin-top: 10px;
+    font-weight: bold;
+}
+
+.status-pending {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.status-processing {
+    background: #cce5ff;
+    color: #004085;
+}
+
+.status-completed {
+    background: #d4edda;
+    color: #155724;
+}
+
+.post-box {
+    background: #f8f9fa;
+    padding: 12px;
+    border-radius: 10px;
+    margin-top: 10px;
+    border-left: 4px solid #0d6efd;
+}
+
+.footer {
+    text-align: center;
+    margin-top: 40px;
+    color: #777;
+    font-size: 13px;
+}
+</style>
+
+</head>
+<body>
+
+<div class="header">Order Details</div>
+
+<div class="container">
+
+    <div id="order_info">Loading...</div>
+
+</div>
+
+<div class="footer">
+    Website created by Toridochi
+</div>
+
+<script>
+function getQuery(key) {
+    return new URLSearchParams(window.location.search).get(key);
+}
+
+async function loadOrder() {
+    const id = getQuery("id");
+    const t = getQuery("t");
+
+    const res = await fetch(`/api/orders/status?id=${id}&t=${t}`);
+    const data = await res.json();
+
+    if (!data.success) {
+        document.getElementById("order_info").innerHTML =
+            `<div style='color:red;'>Error loading order: ${data.error}</div>`;
+        return;
+    }
+
+    const o = data.order;
+    const posts = JSON.parse(o.note).posts;
+
+    let statusClass = "status-pending";
+    if (o.status === "processing") statusClass = "status-processing";
+    if (o.status === "completed") statusClass = "status-completed";
+
+    let html = `
+        <div class="section-title">Order ID: ${o.id}</div>
+        <div class="section-title">Status:</div>
+        <div class="status-box ${statusClass}">${o.status}</div>
+
+        <div class="section-title">Total Amount:</div>
+        <div><b>${o.price} USDT</b></div>
+
+        <div class="section-title">Contact:</div>
+        <div>${o.contact}</div>
+
+        <div class="section-title">Posts:</div>
+    `;
+
+    posts.forEach((p, index) => {
+        html += `
+        <div class="post-box">
+            <b>Post #${index+1}</b><br>
+            <a href="${p.link}" target="_blank">${p.link}</a><br><br>
+
+            ${p.views ? "Views: " + p.views + "<br>" : ""}
+            ${p.comments ? "Comments: " + p.comments + "<br>" : ""}
+            ${p.likes ? "Likes: " + p.likes + "<br>" : ""}
+            ${p.combo ? "Combos: " + p.combo.count + "<br>" : ""}
+        </div>`;
+    });
+
+    document.getElementById("order_info").innerHTML = html;
+}
+
+// auto-refresh status every 10 seconds
+setInterval(loadOrder, 10000);
+
+loadOrder();
+
+</script>
+
+</body>
+</html>
 
