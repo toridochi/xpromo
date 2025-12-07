@@ -1,10 +1,8 @@
 name = "xpromo-v2"
-compatibility_date = "2024-09-12"
+compatibility_date = "2024-01-01"
+pages_build_output_dir = "./public"
 
-pages_build_output_dir = "public"
-
-[build]
-command = ""
-
-[experimental]
-npm_packages = ["jose"]
+[[d1_databases]]
+binding = "DB"
+database_name = "orderdb"
+database_id = "9ea108c9-107a-4232-b903-8da7c5beaded"
