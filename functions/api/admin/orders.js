@@ -2,7 +2,7 @@ export async function onRequestGet({ request, env }) {
   const auth = request.headers.get("Authorization");
 
   // Lấy key thật từ Cloudflare Environment
-  const realKey = env.Phamuyen@123.1;
+  const realKey = env.ADMIN_SECRET_KEY;
 
   if (auth !== `Bearer ${realKey}`) {
     return new Response("Unauthorized", { status: 403 });
