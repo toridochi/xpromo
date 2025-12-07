@@ -18,5 +18,109 @@
         background: white;
         padding: 25px;
         border-radius: 12px;
-        box-shadow: 0
+        box-shadow: 0 4px 14px rgba(0,0,0,0.1);
+    }
+    h2 {
+        margin-top: 0;
+        text-align: center;
+    }
+    label {
+        display: block;
+        margin: 12px 0 6px;
+        font-weight: bold;
+    }
+    input, select, textarea {
+        width: 100%;
+        padding: 10px;
+        border-radius: 8px;
+        border: 1px solid #ccc;
+        margin-bottom: 10px;
+    }
+    button {
+        width: 100%;
+        padding: 12px;
+        background: #0077ff;
+        border: none;
+        border-radius: 8px;
+        color: white;
+        font-size: 16px;
+        cursor: pointer;
+        margin-top: 10px;
+    }
+    #result {
+        margin-top: 20px;
+        padding: 15px;
+        background: #e7f3ff;
+        border-radius: 8px;
+        display: none;
+    }
+</style>
 
+</head>
+<body>
+
+<div class="container">
+    <h2>Create Order</h2>
+
+    <label>Post Link</label>
+    <input id="post_link" placeholder="https://x.com/...">
+
+    <label>Package</label>
+    <select id="package">
+        <option value="basic">Basic - $5</option>
+        <option value="pro">Pro - $10</option>
+        <option value="vip">VIP - $20</option>
+    </select>
+
+    <label>Contact (Email or X handle)</label>
+    <input id="contact">
+
+    <label>Note (Optional)</label>
+    <textarea id="note"></textarea>
+
+    <button onclick="createOrder()">Create Order</button>
+
+    <div id="result"></div>
+</div>
+
+<script>
+async function createOrder() {
+    const body = {
+        post_link: document.getElementById("post_link").value,
+        package: document.getElementById("package").value,
+        contact: document.getElementById("contact").value,
+        note: document.getElementById("note").value
+    };
+
+    const res = await fetch("/api/orders/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body)
+    });
+
+    const data = await res.json();
+
+    const div = document.getElementById("result");
+    div.style.display = "block";
+    div.innerHTML = `
+        <h3>Order Created</h3>
+        <p><b>Price:</b> ${data.price} ${data.currency}</p>
+        <p><b>Pay to:</b> ${data.pay_address}</p>
+        <p><b>Your tracking link:</b><br>
+        <a href="${data.tracking_url}">${data.tracking_url}</a></p>
+        <button onclick="confirmPayment(${data.order_id}, '${data.tracking_url.split('t=')[1]}')">I Sent Payment</button>
+    `;
+}
+
+async function confirmPayment(orderId, token) {
+    await fetch("/api/orders/confirm", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ order_id: orderId, public_token: token })
+    });
+    alert("Payment confirmed! You can check your order status via the tracking link.");
+}
+</script>
+
+</body>
+</html>
