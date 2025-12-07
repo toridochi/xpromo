@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -63,8 +62,10 @@
             display: inline-block;
         }
 
+        /* Status Color Fix */
         .pending_payment { background: #fff3cd; color: #927400; }
-        .paid { background: #cfe2ff; color: #084298; }
+        .paid_waiting_confirmation { background: #cfe2ff; color: #084298; }
+        .confirmed { background: #bfe7ff; color: #064270; }
         .completed { background: #d1e7dd; color: #0f5132; }
         .unknown { background: #e2e3e5; color: #41464b; }
 
@@ -130,89 +131,108 @@
 
 
 <script>
-const ADMIN_KEY = localStorage.getItem("ADMIN_TOKEN");
 
-if (!ADMIN_KEY) {
-    window.location.href = "/admin-login.html";
+const ADMIN_KEY = localStorage.getItem("ADMIN_TOKEN");
+if (!ADMIN_KEY) window.location.href = "/admin-login.html";
+
+
+function mapStatus(status) {
+    switch (status) {
+        case "pending_payment": 
+            return { text: "Waiting for Payment", css: "pending_payment" };
+        case "paid_waiting_confirmation":
+            return { text: "Waiting for Confirmation", css: "paid_waiting_confirmation" };
+        case "confirmed":
+            return { text: "Confirmed", css: "confirmed" };
+        case "completed":
+            return { text: "Completed", css: "completed" };
+        default:
+            return { text: status, css: "unknown" };
+    }
 }
 
-    async function loadOrders() {
-        const res = await fetch("/api/admin/orders", {
-            headers: { "Authorization": "Bearer " + ADMIN_KEY }
-        });
 
-        const data = await res.json();
+async function loadOrders() {
+    const res = await fetch("/api/admin/orders", {
+        headers: { "Authorization": "Bearer " + ADMIN_KEY }
+    });
 
-        const body = document.getElementById("orderBody");
-        body.innerHTML = "";
+    const data = await res.json();
 
-        data.forEach(order => {
-            let postsHTML = "";
-            let posts;
+    const body = document.getElementById("orderBody");
+    body.innerHTML = "";
 
-            try { posts = JSON.parse(order.note).posts; }
-            catch { posts = []; }
+    data.forEach(order => {
+        let postsHTML = "";
+        let posts;
 
-            posts.forEach((p, i) => {
-                postsHTML += `
-                    <div class="post-box">
-                        <b>Post #${i+1}</b><br>
-                        <a href="${p.link}" target="_blank">${p.link}</a><br>
-                        ${p.views ? `Views: ${p.views}<br>` : ""}
-                        ${p.comments ? `Comments: ${p.comments}<br>` : ""}
-                        ${p.likes ? `Likes: ${p.likes}<br>` : ""}
-                        ${p.combo?.count ? `Combos: ${p.combo.count}<br>` : ""}
-                    </div>
-                `;
-            });
+        try { posts = JSON.parse(order.note).posts; }
+        catch { posts = []; }
 
-            body.innerHTML += `
-                <tr>
-                    <td>${order.id}</td>
-                    <td><span class="status ${order.status}">${order.status}</span></td>
-                    <td>${order.contact}</td>
-                    <td>${order.price} USDT</td>
-                    <td>${postsHTML}</td>
-                    <td>
-                        <button class="btn btn-confirm" onclick="updateStatus(${order.id}, 'paid')">Mark as Confirmed</button>
-                        <button class="btn btn-complete" onclick="updateStatus(${order.id}, 'completed')">Mark Completed</button>
-                    </td>
-                </tr>
+        posts.forEach((p, i) => {
+            postsHTML += `
+                <div class="post-box">
+                    <b>Post #${i+1}</b><br>
+                    <a href="${p.link}" target="_blank">${p.link}</a><br>
+                    ${p.views ? `Views: ${p.views}<br>` : ""}
+                    ${p.comments ? `Comments: ${p.comments}<br>` : ""}
+                    ${p.likes ? `Likes: ${p.likes}<br>` : ""}
+                    ${p.combo?.count ? `Combos: ${p.combo.count}<br>` : ""}
+                </div>
             `;
         });
+
+        const st = mapStatus(order.status);
+
+        body.innerHTML += `
+            <tr>
+                <td>${order.id}</td>
+                <td><span class="status ${st.css}">${st.text}</span></td>
+                <td>${order.contact}</td>
+                <td>${order.price} USDT</td>
+                <td>${postsHTML}</td>
+                <td>
+                    <button class="btn btn-confirm" onclick="updateStatus(${order.id}, 'confirmed')">Confirm</button>
+                    <button class="btn btn-complete" onclick="updateStatus(${order.id}, 'completed')">Complete</button>
+                </td>
+            </tr>
+        `;
+    });
+}
+
+
+async function updateStatus(id, status) {
+    const res = await fetch("/api/admin/update", {
+        method: "POST",
+        headers: { 
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + ADMIN_KEY
+        },
+        body: JSON.stringify({ id, status })
+    });
+
+    if (res.ok) {
+        alert("Status updated successfully!");
+        loadOrders();
+    } else {
+        alert("Failed to update status.");
     }
+}
 
-    async function updateStatus(id, status) {
-        const res = await fetch("/api/admin/update", {
-            method: "POST",
-            headers: { 
-                "Content-Type": "application/json",
-                "Authorization": "Bearer " + ADMIN_KEY
-            },
-            body: JSON.stringify({ id, status })
-        });
 
-        if (res.ok) {
-            alert("Updated successfully.");
-            loadOrders();
-        } else {
-            alert("Failed to update.");
-        }
-    }
+function filterOrders() {
+    let value = document.getElementById("search").value.toLowerCase();
+    let rows = document.querySelectorAll("#orderBody tr");
 
-    function filterOrders() {
-        let value = document.getElementById("search").value.toLowerCase();
-        let rows = document.querySelectorAll("#orderBody tr");
+    rows.forEach(row => {
+        let text = row.innerText.toLowerCase();
+        row.style.display = text.includes(value) ? "" : "none";
+    });
+}
 
-        rows.forEach(row => {
-            let text = row.innerText.toLowerCase();
-            row.style.display = text.includes(value) ? "" : "none";
-        });
-    }
+loadOrders();
 
-    loadOrders();
 </script>
 
 </body>
 </html>
-
