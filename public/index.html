@@ -387,7 +387,8 @@ async function submitOrder() {
 
     const data = await res.json();
 
-    alert("Order created! Tracking link: " + data.tracking_url);
+    window.location.href = `/payment.html?id=${data.id}&t=${data.public_token}&amount=${updateTotal()}`;
+
 }
 
 
