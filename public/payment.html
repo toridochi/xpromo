@@ -136,11 +136,35 @@ function copyWallet() {
     alert("Wallet address copied!");
 }
 
-function confirmPaid() {
+//  ✅ FIXED — gửi xác nhận lên API confirm
+async function confirmPaid() {
     const id = getQuery("id");
-    const t = getQuery("t");
+    const token = getQuery("t");
 
-    window.location.href = `/order.html?id=${id}&t=${t}`;
+    if (!id || !token) {
+        alert("Missing order ID or token.");
+        return;
+    }
+
+    // Gửi request xác nhận thanh toán
+    const res = await fetch("/api/orders/confirm", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            id: parseInt(id),
+            public_token: token
+        })
+    });
+
+    const data = await res.json();
+
+    if (!data.ok) {
+        alert("Error confirming payment: " + (data.error || "Unknown error."));
+        return;
+    }
+
+    // Redirect đúng format (Không bị undefined nữa)
+    window.location.href = `/order?id=${data.order.id}&t=${data.order.public_token}`;
 }
 </script>
 
