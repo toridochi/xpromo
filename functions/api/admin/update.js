@@ -1,16 +1,17 @@
 export async function onRequestPost({ request, env }) {
   const auth = request.headers.get("Authorization");
-  if (auth !== "Bearer Phamuyen@123.1") {
+  const realKey = env.ADMIN_SECRET_KEY;
+
+  if (auth !== `Bearer ${realKey}`) {
     return new Response("Unauthorized", { status: 403 });
   }
 
-  const body = await request.json();
-  const { order_id, status } = body;
+  const { id, status } = await request.json();
 
   await env.DB.prepare(
-    "UPDATE orders SET status = ?, updated_at = ? WHERE id = ?"
-  ).bind(status, new Date().toISOString(), order_id).run();
+    "UPDATE orders SET status = ?, updated_at = datetime('now') WHERE id = ?"
+  ).bind(status, id)
+  .run();
 
-  return Response.json({ message: "updated" });
+  return Response.json({ success: true });
 }
-
