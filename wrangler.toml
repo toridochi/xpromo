@@ -1,1 +1,7 @@
+name = "order-website"
+compatibility_date = "2024-01-01"
+pages_build_output_dir = "./public"
+
+[d1_databases]
+orderDB = { binding = "DB", database_name = "orderDB", database_id = "9ea108c9-107a-4232-b903-8da7c5beaded" }
 
