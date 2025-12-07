@@ -1,15 +1,30 @@
 export async function onRequestPost({ request, env }) {
-  const { id, token } = await request.json();
+    try {
+        const { id, public_token } = await request.json();
 
-  const order = await env.DB.prepare(
-    "SELECT * FROM orders WHERE id = ? AND public_token = ?"
-  ).bind(id, token).first();
+        if (!id || !public_token) {
+            return Response.json({ error: "Missing id or token" }, { status: 400 });
+        }
 
-  if (!order) return Response.json({ error: "Order not found" }, { status: 404 });
+        // Cập nhật trạng thái đơn hàng thành "paid_waiting_confirmation"
+        await env.DB.prepare(
+            `UPDATE orders 
+             SET status = ?, updated_at = datetime('now') 
+             WHERE id = ? AND public_token = ?`
+        )
+        .bind("paid_waiting_confirmation", id, public_token)
+        .run();
 
-  await env.DB.prepare(
-    "UPDATE orders SET status = ?, updated_at = ? WHERE id = ?"
-  ).bind("paid_waiting_approval", new Date().toISOString(), id).run();
+        // Trả response về client
+        return Response.json({
+            ok: true,
+            order: {
+                id,
+                public_token
+            }
+        });
 
-  return Response.json({ ok: true });
+    } catch (err) {
+        return Response.json({ error: err.message }, { status: 500 });
+    }
 }
