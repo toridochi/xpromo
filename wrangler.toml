@@ -1,13 +1,17 @@
-name = "xpromo"
-compatibility_date = "2024-01-01"
+# Cloudflare Pages project config
+name = "xpromo-v2"
+compatibility_date = "2024-02-05"
 
-[vars]
-# optional
+# Đây là folder output cho website (public)
+pages_build_output_dir = "public"
 
-[[d1_databases]]
-binding = "DB"
-database_name = "orderdb"
-database_id = "9ea108c9-107a-4232-b903-8da7c5beaded"
+[build]
+command = ""
 
-[site]
-bucket = "./public"
+[dev]
+ip = "0.0.0.0"
+port = 8787
+
+# Bật npm modules cho Pages Functions
+[experimental]
+enable_pages_builds = true
