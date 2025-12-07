@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Login</title>
+
+<style>
+body {
+    background: #eef2f7;
+    font-family: Arial;
+    margin: 0;
+}
+.box {
+    max-width: 380px;
+    background: #fff;
+    margin: 80px auto;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+}
+h2 {
+    text-align: center;
+    margin-bottom: 25px;
+    color: #007bff;
+}
+input {
+    width: 100%;
+    padding: 12px;
+    margin-top: 14px;
+    font-size: 15px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+}
+button {
+    width: 100%;
+    margin-top: 20px;
+    padding: 12px;
+    background: #007bff;
+    border: 0;
+    color: white;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+}
+.error {
+    color: red;
+    margin-top: 15px;
+    text-align: center;
+}
+</style>
+
+</head>
+<body>
+
+<div class="box">
+    <h2>Admin Login</h2>
+
+    <input id="password" type="password" placeholder="Enter admin password">
+
+    <button onclick="login()">Login</button>
+
+    <div id="error" class="error"></div>
+</div>
+
+<script>
+async function login() {
+    const password = document.getElementById("password").value;
+    const res = await fetch("/api/admin/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password })
+    });
+
+    const data = await res.json();
+
+    if (!data.token) {
+        document.getElementById("error").innerText = "Wrong password!";
+        return;
+    }
+
+    localStorage.setItem("ADMIN_TOKEN", data.token);
+    window.location.href = "/admin.html";
+}
+</script>
+
+</body>
+</html>
