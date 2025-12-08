@@ -295,46 +295,39 @@ async function submitOrder() {
 
     const contact = document.getElementById("contact").value.trim();
 
-// yêu cầu email hợp lệ
-const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-if (!emailRegex.test(contact)) {
-    alert("Please enter a valid email address.");
-    document.getElementById("contact").style.border = "2px solid red";
-    return;
-} else {
-    document.getElementById("contact").style.border = "1px solid #ccc";
-}
-
+    // Validate email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(contact)) {
+        alert("Please enter a valid email address.");
+        document.getElementById("contact").style.border = "2px solid red";
+        return;
+    } else {
+        document.getElementById("contact").style.border = "1px solid #ccc";
+    }
 
     const twitterRegex = /^https?:\/\/(x|twitter)\.com\/([A-Za-z0-9_]{1,50})\/status\/(\d+)$/;
 
     let posts = [];
-    let valid = true;
 
     for (let i = 1; i <= postCount; i++) {
 
         const box = document.getElementById(`post_${i}`);
-        if (!box) continue; // Skip deleted posts
+        if (!box) continue;
 
         const linkField = document.getElementById(`link_${i}`);
         const link = linkField.value.trim();
 
-        // must have link
         if (!link) {
             alert(`Post #${i}: Please enter a valid X/Twitter post link.`);
             linkField.style.border = "2px solid red";
             return;
         }
 
-        // must be correct twitter/x format
         if (!twitterRegex.test(link)) {
             alert(`Post #${i}: Invalid X/Twitter post URL.`);
             linkField.style.border = "2px solid red";
             return;
         }
-
-        linkField.style.border = "1px solid #ccc";
 
         const hasService =
             document.getElementById(`view_${i}`).checked ||
@@ -346,8 +339,6 @@ if (!emailRegex.test(contact)) {
             alert(`Post #${i}: You must select at least one service.`);
             return;
         }
-
-        // Min checks handled by validateMin()
 
         posts.push({
             link,
@@ -362,23 +353,23 @@ if (!emailRegex.test(contact)) {
                     count: parseInt(document.getElementById(`combo_amount_${i}`).value), 
                     price: 14 
                 }
-                : 0
+                : null
         });
     }
 
-    const customer_note = document.getElementById("note").value.trim();
+    // 🔥 FIX QUAN TRỌNG: phải dùng user_note đúng key mà admin đang đọc
+    const userNote = document.getElementById("note").value.trim();
 
-const body = {
-    post_link: "MULTI",
-    package: "multi",
-    contact,
-    note: {
-        posts,
-        customer_note: customer_note || null
-    },
-    price: updateTotal()
-};
-
+    const body = {
+        post_link: "MULTI",
+        package: "multi",
+        contact,
+        note: {
+            user_note: userNote || null,   // 🔥 admin đọc key này
+            posts: posts                   // 🔥 giữ nguyên cấu trúc
+        },
+        price: updateTotal()
+    };
 
     const res = await fetch("/api/orders/create", {
         method: "POST",
@@ -388,15 +379,10 @@ const body = {
 
     const data = await res.json();
 
-let orderId = data.order.id;
-
-window.location.href =
-  `/payment.html?id=${data.order.id}&t=${data.order.public_token}&amount=${data.order.price}`;
-
-
-
-
+    window.location.href =
+        `/payment.html?id=${data.order.id}&t=${data.order.public_token}&amount=${data.order.price}`;
 }
+
 
 
 function removePost(id) {
