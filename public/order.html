@@ -32,18 +32,8 @@
         }
 
         .row { margin-bottom: 18px; }
-
-        .label {
-            font-weight: bold;
-            color: #222;
-            margin-bottom: 4px;
-            display: block;
-        }
-
-        .value {
-            font-size: 16px;
-            color: #444;
-        }
+        .label { font-weight: bold; color: #222; margin-bottom: 4px; display: block; }
+        .value { font-size: 16px; color: #444; }
 
         .status-box {
             padding: 12px;
@@ -53,25 +43,36 @@
             margin-top: 6px;
         }
 
-        .status-pending {
-            background: #fff3cd;
-            color: #b58b00;
+        .status-pending { background: #fff3cd; color: #b58b00; }
+        .status-paid_waiting { background: #cfe2ff; color: #084298; }
+        .status-completed { background: #d1e7dd; color: #0f5132; }
+        .status-unknown { background: #e2e3e5; color: #41464b; }
+
+        .note-box {
+            background: #fff7e6;
+            padding: 12px;
+            border-left: 4px solid #ffb84d;
+            border-radius: 6px;
+            margin-top: 12px;
+            white-space: pre-wrap;
         }
 
-        .status-paid_waiting {
-            background: #cfe2ff;
-            color: #084298;
+        .combo-box {
+            background: #e6f7ff;
+            padding: 12px;
+            border-left: 4px solid #33aaff;
+            border-radius: 6px;
+            margin-top: 12px;
         }
 
-        .status-completed {
-            background: #d1e7dd;
-            color: #0f5132;
+        .post-box {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 12px;
         }
 
-        .status-unknown {
-            background: #e2e3e5;
-            color: #41464b;
-        }
+        a { color: #007bff; word-break: break-all; }
 
         .footer {
             text-align: center;
@@ -79,8 +80,6 @@
             color: #777;
             font-size: 14px;
         }
-
-        a { color: #007bff; word-break: break-all; }
     </style>
 </head>
 
@@ -89,6 +88,7 @@
     <div class="header">Order Details</div>
 
     <div class="container">
+
         <div class="row">
             <span class="label">Order ID:</span>
             <span id="orderId" class="value">...</span>
@@ -110,99 +110,109 @@
         </div>
 
         <div class="row">
+            <span class="label">Customer Note:</span>
+            <div id="userNote" class="note-box"></div>
+        </div>
+
+        <div class="row">
+            <span class="label">Combo:</span>
+            <div id="comboBox"></div>
+        </div>
+
+        <div class="row">
             <span class="label">Posts:</span>
             <div id="posts"></div>
         </div>
+
     </div>
 
     <div class="footer">Website created by Toridochi</div>
 
 <script>
 
-    function translateStatus(s) {
-        switch (s) {
-            case "pending_payment":
-                return { text: "Waiting for Payment", css: "status-pending" };
-            case "paid_waiting_confirmation":
-                return { text: "Waiting for Seller Confirmation", css: "status-paid_waiting" };
-            case "completed":
-                return { text: "Completed", css: "status-completed" };
-            default:
-                return { text: s, css: "status-unknown" };
-        }
+function translateStatus(s) {
+    switch (s) {
+        case "pending_payment":
+            return { text: "Waiting for Payment", css: "status-pending" };
+        case "paid_waiting_confirmation":
+            return { text: "Waiting for Seller Confirmation", css: "status-paid_waiting" };
+        case "completed":
+            return { text: "Completed", css: "status-completed" };
+        default:
+            return { text: s, css: "status-unknown" };
+    }
+}
+
+async function loadOrder() {
+    const url = new URL(window.location.href);
+    const id = url.searchParams.get("id");
+    const t = url.searchParams.get("t");
+
+    if (!id || !t) {
+        document.getElementById("statusBox").innerText = "Invalid tracking link.";
+        return;
     }
 
-    async function loadOrder() {
-        const url = new URL(window.location.href);
-        const id = url.searchParams.get("id");
-        const t = url.searchParams.get("t");
+    const res = await fetch(`/api/orders/status?id=${id}&t=${t}`);
 
-        if (!id || !t) {
-            document.getElementById("statusBox").innerText = "Invalid tracking link.";
-            return;
-        }
+    let data;
+    try { data = await res.json(); }
+    catch { 
+        document.getElementById("statusBox").innerText = "Error loading order.";
+        return;
+    }
 
-        const res = await fetch(`/api/orders/status?id=${id}&t=${t}`);
+    if (!data.order) {
+        document.getElementById("statusBox").innerText = "Order not found.";
+        return;
+    }
 
-        let data;
-        try {
-            data = await res.json();
-        } catch (err) {
-            document.getElementById("statusBox").innerText = "Error loading order.";
-            return;
-        }
+    const order = data.order;
 
-        if (!data.order) {
-            document.getElementById("statusBox").innerText = "Order not found.";
-            return;
-        }
+    document.getElementById("orderId").innerText = order.id;
+    document.getElementById("amount").innerText = order.price;
+    document.getElementById("contact").innerText = order.contact;
 
-        const order = data.order;
+    const statusInfo = translateStatus(order.status);
+    const statusEl = document.getElementById("statusBox");
+    statusEl.innerText = statusInfo.text;
+    statusEl.className = `status-box ${statusInfo.css}`;
 
-        document.getElementById("orderId").innerText = order.id;
-        document.getElementById("amount").innerText = order.price;
-        document.getElementById("contact").innerText = order.contact;
+    // Parse note
+    let noteData = {};
+    try { noteData = JSON.parse(order.note); } 
+    catch { noteData = {}; }
 
-        const st = translateStatus(order.status);
-        const statusEl = document.getElementById("statusBox");
-        statusEl.innerText = st.text;
-        statusEl.className = `status-box ${st.css}`;
+    document.getElementById("userNote").innerText =
+        noteData.user_note || "(No note)";
 
-        const postsBox = document.getElementById("posts");
-        postsBox.innerHTML = "";
+    const comboBox = document.getElementById("comboBox");
+    comboBox.innerHTML = noteData.combo
+        ? `<div class="combo-box">
+                Combo: ${noteData.combo.count} posts<br>
+                Combo Price: ${noteData.combo.price} USDT
+           </div>`
+        : "(No combo)";
 
-        let posts = [];
-        try {
-            posts = JSON.parse(order.note).posts;
-        } catch (e) {}
+    // Posts
+    const posts = noteData.posts || [];
+    const postsBox = document.getElementById("posts");
+    postsBox.innerHTML = "";
 
-        posts.forEach((p, i) => {
-
-            const box = document.createElement("div");
-            box.style.marginBottom = "14px";
-
-            box.innerHTML = `
-                <div><b>Post #${i + 1}</b></div>
+    posts.forEach((p, i) => {
+        postsBox.innerHTML += `
+            <div class="post-box">
+                <b>Post #${i + 1}</b><br>
                 <a href="${p.link}" target="_blank">${p.link}</a><br>
-
                 ${p.views ? `Views: ${p.views}<br>` : ""}
                 ${p.comments ? `Comments: ${p.comments}<br>` : ""}
                 ${p.likes ? `Likes: ${p.likes}<br>` : ""}
+            </div>
+        `;
+    });
+}
 
-                ${p.combo && p.combo.count !== undefined 
-                    ? `Combo Count: ${p.combo.count}<br>` 
-                    : ""}
-
-                ${p.combo && p.combo.price !== undefined
-                    ? `Combo Price: ${p.combo.price} USDT<br>`
-                    : ""}
-            `;
-
-            postsBox.appendChild(box);
-        });
-    }
-
-    loadOrder();
+loadOrder();
 </script>
 
 </body>
