@@ -366,13 +366,19 @@ if (!emailRegex.test(contact)) {
         });
     }
 
-    const body = {
-        post_link: "MULTI",
-        package: "multi",
-        contact,
-        note: { posts },
-        price: updateTotal()
-    };
+    const customer_note = document.getElementById("note").value.trim();
+
+const body = {
+    post_link: "MULTI",
+    package: "multi",
+    contact,
+    note: {
+        posts,
+        customer_note: customer_note || null
+    },
+    price: updateTotal()
+};
+
 
     const res = await fetch("/api/orders/create", {
         method: "POST",
