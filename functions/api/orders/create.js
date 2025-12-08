@@ -73,7 +73,7 @@ export async function onRequestPost({ request, env }) {
   const orderId = row.id;
 
   // ⭐ 5. Gửi dữ liệu đầy đủ sang Worker để lưu KV
-  await fetch("https://polished-glade-ad1fa1.humada.workers.dev", {
+  await fetch("https://polished-glade-ad1f.a1humada.workers.dev", {
     method: "POST",
     mode: "cors",
     headers: {
