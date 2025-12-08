@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+
+# Do NOT index sensitive pages
+Disallow: /payment.html
+Disallow: /order.html
+
+# Sitemap location
+Sitemap: https://xpromo.pages.dev/sitemap.xml
