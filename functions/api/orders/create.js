@@ -1,5 +1,25 @@
 export async function onRequestPost({ request, env }) {
   const data = await request.json();
+  // 1. Check Turnstile token
+const captchaToken = data.turnstile;
+if (!captchaToken) {
+    return Response.json({ error: "Missing captcha" }, { status: 400 });
+}
+
+// 2. Verify with Cloudflare
+const verifyRes = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
+    method: "POST",
+    body: new URLSearchParams({
+        secret: env.TURNSTILE_SECRET,
+        response: captchaToken
+    })
+});
+const verifyJson = await verifyRes.json();
+
+if (!verifyJson.success) {
+    return Response.json({ error: "Captcha failed" }, { status: 400 });
+}
+
 
   const {
     post_link,
