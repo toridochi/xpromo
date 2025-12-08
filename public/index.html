@@ -370,7 +370,7 @@ if (!emailRegex.test(contact)) {
         post_link: "MULTI",
         package: "multi",
         contact,
-        note: JSON.stringify({ posts }),
+        note: { posts },
         price: updateTotal()
     };
 
