@@ -205,7 +205,17 @@ textarea:focus {
     <div class="total-row">
         Total: <span id="total_price">0.00</span> USD
     </div>
-
+    <div id="breakdown_box" style="
+    background:#f8faff;
+    border:1px solid #dce6ff;
+    padding:18px;
+    border-radius:10px;
+    margin-top:20px;
+    display:none;
+">
+    <h3 style="margin-top:0;font-size:18px;">Price Breakdown</h3>
+    <div id="breakdown_content" style="line-height:1.6;font-size:15px;"></div>
+</div>
     <label>Email</label>
     <input type="text" id="contact" placeholder="you@example.com">
 
@@ -390,32 +400,80 @@ function validateMin(id, type) {
 
 function updateTotal() {
     let total = 0;
+    let breakdownHTML = "";
 
     for (let i = 1; i <= postCount; i++) {
         if (!document.getElementById(`post_${i}`)) continue;
 
+        let postTotal = 0;
+        let postLines = "";
+
+        // VIEWS
         if (document.getElementById(`view_${i}`).checked) {
             let v = parseInt(document.getElementById(`view_amount_${i}`).value);
-            if (v >= 5000) total += 1 + ((v - 5000) / 1000) * 0.2;
+            if (v >= 5000) {
+                const price = 1 + ((v - 5000) / 1000) * 0.2;
+                postTotal += price;
+                postLines += `▪ Views: ${v.toLocaleString()} → $${price.toFixed(2)}<br>`;
+            }
         }
 
+        // COMMENTS
         if (document.getElementById(`comment_${i}`).checked) {
             let c = parseInt(document.getElementById(`comment_amount_${i}`).value);
-            if (c >= 10) total += 3 + (c - 10) * 0.3;
+            if (c >= 10) {
+                const price = 3 + (c - 10) * 0.3;
+                postTotal += price;
+                postLines += `▪ Comments: ${c} → $${price.toFixed(2)}<br>`;
+            }
         }
 
+        // LIKES
         if (document.getElementById(`like_${i}`).checked) {
             let l = parseInt(document.getElementById(`like_amount_${i}`).value);
-            if (l >= 100) total += 2 + ((l - 100) / 10) * 0.2;
+            if (l >= 100) {
+                const price = 2 + ((l - 100) / 10) * 0.2;
+                postTotal += price;
+                postLines += `▪ Likes: ${l} → $${price.toFixed(2)}<br>`;
+            }
         }
 
+        // COMBO
         if (document.getElementById(`combo_${i}`).checked) {
             let cb = parseInt(document.getElementById(`combo_amount_${i}`).value);
-            if (cb >= 1) total += cb * 14;
+            if (cb >= 1) {
+                const price = cb * 14;
+                postTotal += price;
+                postLines += `▪ Combo ×${cb} → $${price.toFixed(2)}<br>`;
+            }
+        }
+
+        total += postTotal;
+
+        if (postTotal > 0) {
+            breakdownHTML += `
+                <div style="margin-bottom:12px;">
+                    <b>Post #${i} — $${postTotal.toFixed(2)}</b><br>
+                    ${postLines}
+                </div>
+            `;
         }
     }
 
+    // Update total
     document.getElementById("total_price").innerText = total.toFixed(2);
+
+    // Update breakdown box
+    const box = document.getElementById("breakdown_box");
+    const content = document.getElementById("breakdown_content");
+
+    if (breakdownHTML.trim() === "") {
+        box.style.display = "none";
+    } else {
+        box.style.display = "block";
+        content.innerHTML = breakdownHTML;
+    }
+
     return total;
 }
 
