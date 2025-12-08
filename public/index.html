@@ -43,6 +43,67 @@
 
 
 <style>
+/* ===== ABOUT SECTION - BOOST VISIBILITY ===== */
+
+.about-section {
+    max-width: 780px;
+    margin: 50px auto;
+    padding: 28px;
+    border-radius: 14px;
+    background: #ffffff;
+    border: 1px solid #e3e6ee;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.05);
+}
+
+.about-section h2,
+.about-section h3 {
+    font-weight: bold;
+    margin-bottom: 12px;
+    color: #333;
+}
+
+.about-section ul li {
+    margin: 6px 0;
+}
+
+/* Dark mode */
+body.dark .about-section {
+    background: #1a1d23 !important;
+    border-color: #2f333a !important;
+    color: #e8e8e8 !important;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.35);
+}
+
+body.dark .about-section h2,
+body.dark .about-section h3 {
+    color: #f0f0f0 !important;
+}
+
+/* ===== FOOTER CREDIT BOOSTED ===== */
+.footer {
+    text-align: center;
+    margin: 50px 0 30px;
+    font-size: 14px;
+    font-weight: bold;
+    color: #555;
+    opacity: 0.85;
+    transition: 0.3s;
+}
+
+.footer:hover {
+    opacity: 1;
+    color: #0d6efd;
+}
+
+body.dark .footer {
+    color: #bbbbbb !important;
+}
+
+body.dark .footer:hover {
+    color: #4d8dff !important;
+}
+
+    
     /* Smooth theme transition (iOS style) */
 * {
     transition: background-color 0.35s ease, 
@@ -416,7 +477,7 @@ textarea:focus {
     <button class="submit-btn" onclick="submitOrder()">Create Order</button>
 </div>
 <!-- SEO CONTENT BLOCK -->
-<div style="max-width:780px;margin:40px auto;font-size:15px;line-height:1.6;color:#555;">
+<div class="about-section">
   <h2>About XPromo</h2>
   <p>
     XPromo is a simple and fast tool that provides real engagement for X/Twitter posts.
