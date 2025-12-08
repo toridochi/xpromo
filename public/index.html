@@ -146,9 +146,14 @@ textarea {
         If you need cheaper bundles, full engagement packages or have any questions, 
         please contact Telegram/X: <b>shuigvn</b> or <b>howhitening</b>.
     </p>
-<div class="cf-turnstile"
-     data-sitekey="0x4AAAAAACFbLkLsJZF9dyHE"
-     id="turnstile-widget"></div>
+<div style="margin-top:20px;">
+    <div class="cf-turnstile"
+         data-sitekey="0x4AAAAAACFbLkLsJZF9dyHE"
+         data-callback="turnstileDone"
+         id="turnstile-widget">
+    </div>
+</div>
+
 
     <button class="submit-btn" onclick="submitOrder()">Create Order</button>
 </div>
@@ -157,6 +162,11 @@ textarea {
 
 
 <script>
+    let turnstileToken = "";
+
+function turnstileDone(token) {
+    turnstileToken = token;
+}
 let postCount = 0;
 
 function addPostBox() {
@@ -295,14 +305,11 @@ function updateTotal() {
 }
 
 async function submitOrder() {
-// Turnstile Captcha validation
-const turnstileToken =
-    document.querySelector('#turnstile-widget textarea')?.value;
-
 if (!turnstileToken) {
     alert("Please verify you are human.");
     return;
 }
+
 
     const contact = document.getElementById("contact").value.trim();
 
@@ -379,9 +386,8 @@ if (!turnstileToken) {
             user_note: userNote || null,   // 🔥 admin đọc key này
             posts: posts                   // 🔥 giữ nguyên cấu trúc
         },
-        price: updateTotal()
-        turnstile: turnstileToken   // <-- thêm dòng này
-
+        price: updateTotal(),
+        turnstile: turnstileToken
     };
 
     const res = await fetch("/api/orders/create", {
