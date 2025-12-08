@@ -155,4 +155,77 @@ async function loadOrder() {
         return;
     }
 
-    const res = await fetch(`/api/orders/status?id
+    const res = await fetch(`/api/orders/status?id=${id}&t=${t}`);
+    let data;
+
+    try { data = await res.json(); }
+    catch { document.getElementById("statusBox").innerText = "Error loading order."; return; }
+
+    if (!data.order) {
+        document.getElementById("statusBox").innerText = "Order not found.";
+        return;
+    }
+
+    const order = data.order;
+
+    // Populate data
+    document.getElementById("orderId").innerText = order.id;
+    document.getElementById("amount").innerText = order.price;
+    document.getElementById("contact").innerText = order.contact;
+
+    const statusInfo = translateStatus(order.status);
+    const statusEl = document.getElementById("statusBox");
+    statusEl.innerText = statusInfo.text;
+    statusEl.className = `status-box ${statusInfo.css}`;
+
+    // Parse note
+    let noteData = {};
+    try { noteData = JSON.parse(order.note || "{}"); }
+    catch { noteData = {}; }
+
+    const noteText =
+        (noteData.user_note && noteData.user_note.trim() !== "")
+            ? noteData.user_note
+            : (noteData.customer_note && noteData.customer_note.trim() !== "")
+                ? noteData.customer_note
+                : "(No note)";
+
+    document.getElementById("userNote").innerText = noteText;
+
+    // Posts
+    const postsBox = document.getElementById("posts");
+    const posts = noteData.posts || [];
+    postsBox.innerHTML = "";
+
+    posts.forEach((p, i) => {
+        postsBox.innerHTML += `
+            <div class="post-box">
+                <b>Post #${i+1}</b><br>
+                <a href="${p.link}" target="_blank">${p.link}</a><br>
+                ${p.views ? `Views: ${p.views}<br>` : ""}
+                ${p.comments ? `Comments: ${p.comments}<br>` : ""}
+                ${p.likes ? `Likes: ${p.likes}<br>` : ""}
+                ${p.combo ? `Combo Packages: ${p.combo.count} × 14 USDT<br>` : ""}
+            </div>
+        `;
+    });
+
+    // 🔥 Show reminder with link
+    const reminder = document.getElementById("reminder");
+    reminder.style.display = "block";
+    document.getElementById("currentLink").innerText = window.location.href;
+}
+
+// Copy link
+function copyLink() {
+    const link = window.location.href;
+    navigator.clipboard.writeText(link).then(() => {
+        alert("Tracking link copied!");
+    });
+}
+
+loadOrder();
+</script>
+
+</body>
+</html>
