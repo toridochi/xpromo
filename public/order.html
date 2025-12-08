@@ -8,7 +8,69 @@
     <style>
         body { font-family: Arial, sans-serif; background: #eef3f8; margin: 0; padding: 0; }
         .header { background: #007bff; color: white; padding: 18px; font-size: 22px; text-align: center; font-weight: bold; }
+/* DARK MODE */
+body.dark {
+    background: #0f1117 !important;
+    color: #e8e8e8 !important;
+}
 
+body.dark .container {
+    background: #181a20 !important;
+    color: #e8e8e8 !important;
+    border-color: #2a2d33 !important;
+}
+
+body.dark input,
+body.dark textarea {
+    background: #111318 !important;
+    color: #e8e8e8 !important;
+    border: 1px solid #3a3d45 !important;
+}
+
+body.dark .box,
+body.dark .card {
+    background: #181a20 !important;
+    border-color: #33363d !important;
+}
+
+body.dark .status-box {
+    background: #2a2d33 !important;
+    color: #fff !important;
+}
+
+body.dark .note-small {
+    color: #ccc !important;
+}
+
+body.dark .back-btn {
+    background: #0b5bd9 !important;
+}
+
+/* Toggle button */
+.theme-toggle {
+    position: fixed;
+    top: 18px;
+    right: 18px;
+    background: #fff;
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 22px;
+    z-index: 9999;
+    transition: 0.25s;
+}
+
+body.dark .theme-toggle {
+    background: #1e2025;
+    color: #eee;
+}
+
+        
         /* 🔥 BANNER CẢNH BÁO NỔI BẬT */
         .reminder-box {
             background:#ffe08a;
@@ -78,6 +140,8 @@
 </head>
 
 <body>
+    <div class="theme-toggle" onclick="toggleTheme()">🌙</div>
+
 
 <div class="header">Order Details</div>
 
@@ -141,6 +205,35 @@
 <div class="footer">Website created by Toridochi</div>
 
 <script>
+
+    /* ========= THEME SYSTEM ========= */
+
+function applyTheme(theme) {
+    if (theme === "dark") {
+        document.body.classList.add("dark");
+        document.querySelector(".theme-toggle").innerHTML = "☀️";
+    } else {
+        document.body.classList.remove("dark");
+        document.querySelector(".theme-toggle").innerHTML = "🌙";
+    }
+}
+
+function toggleTheme() {
+    const newTheme = document.body.classList.contains("dark") ? "light" : "dark";
+    localStorage.setItem("themeMode", newTheme);
+    applyTheme(newTheme);
+}
+
+// Load saved theme
+(function() {
+    let saved = localStorage.getItem("themeMode");
+    if (!saved) {
+        saved = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+        localStorage.setItem("themeMode", saved);
+    }
+    applyTheme(saved);
+})();
+
 
 function translateStatus(s) {
     switch (s) {
