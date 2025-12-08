@@ -45,7 +45,6 @@
             color: #444;
         }
 
-        /* STATUS COLORS */
         .status-box {
             padding: 12px;
             border-radius: 8px;
@@ -120,7 +119,6 @@
 
 <script>
 
-    // Mapping status → text + color
     function translateStatus(s) {
         switch (s) {
             case "pending_payment":
@@ -144,9 +142,7 @@
             return;
         }
 
-        // ❗ FIXED — đúng biến t, không phải token
         const res = await fetch(`/api/orders/status?id=${id}&t=${t}`);
-
 
         let data;
         try {
@@ -161,37 +157,45 @@
             return;
         }
 
-        document.getElementById("orderId").innerText = data.order.id;
-        document.getElementById("amount").innerText = data.order.price;
-        document.getElementById("contact").innerText = data.order.contact;
+        const order = data.order;
 
-        // STATUS
-        const st = translateStatus(data.order.status);
+        document.getElementById("orderId").innerText = order.id;
+        document.getElementById("amount").innerText = order.price;
+        document.getElementById("contact").innerText = order.contact;
+
+        const st = translateStatus(order.status);
         const statusEl = document.getElementById("statusBox");
         statusEl.innerText = st.text;
         statusEl.className = `status-box ${st.css}`;
 
-        // POSTS
         const postsBox = document.getElementById("posts");
         postsBox.innerHTML = "";
 
         let posts = [];
         try {
-            posts = JSON.parse(data.order.note).posts;
+            posts = JSON.parse(order.note).posts;
         } catch (e) {}
 
         posts.forEach((p, i) => {
+
             const box = document.createElement("div");
             box.style.marginBottom = "14px";
 
             box.innerHTML = `
                 <div><b>Post #${i + 1}</b></div>
                 <a href="${p.link}" target="_blank">${p.link}</a><br>
+
                 ${p.views ? `Views: ${p.views}<br>` : ""}
                 ${p.comments ? `Comments: ${p.comments}<br>` : ""}
                 ${p.likes ? `Likes: ${p.likes}<br>` : ""}
-                ${p.count ? `Combo Count: ${p.count}<br>` : ""}
-                ${p.price ? `Price: ${p.price} USDT<br>` : ""}
+
+                ${p.combo && p.combo.count !== undefined 
+                    ? `Combo Count: ${p.combo.count}<br>` 
+                    : ""}
+
+                ${p.combo && p.combo.price !== undefined
+                    ? `Combo Price: ${p.combo.price} USDT<br>`
+                    : ""}
             `;
 
             postsBox.appendChild(box);
