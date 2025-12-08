@@ -62,6 +62,11 @@
         .status-completed { background: #d1e7dd; color: #0f5132; }
         .status-unknown { background: #e2e3e5; color: #41464b; }
 
+        .note-box { background: #fff7e6; padding: 12px; border-left: 4px solid #ffb84d; border-radius: 6px; white-space: pre-wrap; }
+
+        .post-box { background: #f8f9fa; padding: 12px; border-radius: 8px; margin-top: 12px; }
+        a { color: #007bff; word-break: break-all; }
+
         .footer { text-align: center; margin-top: 40px; color: #777; font-size: 14px; }
     </style>
 </head>
@@ -70,7 +75,7 @@
 
 <div class="header">Order Details</div>
 
-<!-- 🔥 REMINDER BOX NỔI BẬT -->
+<!-- 🔥 REMINDER BOX -->
 <div id="reminder" class="reminder-box">
     🔔 <b>Important:</b> Please save this page link to check your order later.
     <div id="currentLink" class="link-display"></div>
@@ -94,18 +99,17 @@
         <span id="amount" class="value">...</span> USDT
     </div>
 
-    <!-- Hidden fields (Contact / User Note / Posts) -->
-    <div class="row" style="display:none;">
+    <div class="row">
         <span class="label">Contact:</span>
-        <span id="contact" class="value"></span>
+        <span id="contact" class="value">...</span>
     </div>
 
-    <div class="row" style="display:none;">
+    <div class="row">
         <span class="label">Customer Note:</span>
-        <div id="userNote"></div>
+        <div id="userNote" class="note-box">(No note)</div>
     </div>
 
-    <div class="row" style="display:none;">
+    <div class="row">
         <span class="label">Posts:</span>
         <div id="posts"></div>
     </div>
@@ -151,49 +155,4 @@ async function loadOrder() {
         return;
     }
 
-    const res = await fetch(`/api/orders/status?id=${id}&t=${t}`);
-    let data;
-
-    try { data = await res.json(); }
-    catch { document.getElementById("statusBox").innerText = "Error loading order."; return; }
-
-    if (!data.order) {
-        document.getElementById("statusBox").innerText = "Order not found.";
-        return;
-    }
-
-    const order = data.order;
-
-    // Display only safe information
-    document.getElementById("orderId").innerText = order.id;
-    document.getElementById("amount").innerText = order.price;
-
-    const statusInfo = translateStatus(order.status);
-    const statusEl = document.getElementById("statusBox");
-    statusEl.innerText = statusInfo.text;
-    statusEl.className = `status-box ${statusInfo.css}`;
-
-    // 🔥 Show reminder + link + enable copy button
-    const reminder = document.getElementById("reminder");
-    reminder.style.display = "block";
-    document.getElementById("currentLink").innerText = window.location.href;
-
-    // Hide everything sensitive
-    document.getElementById("contact").innerText = "";
-    document.getElementById("userNote").innerText = "";
-    document.getElementById("posts").innerHTML = "";
-}
-
-// ✅ COPY LINK FUNCTION
-function copyLink() {
-    const link = window.location.href;
-    navigator.clipboard.writeText(link).then(() => {
-        alert("Tracking link copied!");
-    });
-}
-
-loadOrder();
-</script>
-
-</body>
-</html>
+    const res = await fetch(`/api/orders/status?id
