@@ -6,6 +6,8 @@
 <title>Order X Link Post Engagement</title>
 
 <style>
+/* ==================== BASE UI ==================== */
+
 body {
     font-family: Arial, sans-serif;
     background: #eef2f7;
@@ -37,13 +39,28 @@ body {
     font-weight: bold;
 }
 
+/* ==================== POST BOX ==================== */
+
 .post-box {
     border: 1px solid #ddd;
-    background: #f9f9f9;
+    background: #fafafa;
     padding: 20px;
     border-radius: 12px;
     margin-bottom: 22px;
-    box-shadow: 0 3px 12px rgba(0,0,0,0.05);
+
+    /* Fade-in animation */
+    animation: fadeIn 0.25s ease-out;
+}
+
+.post-box:hover {
+    box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+    transform: translateY(-2px);
+    transition: 0.2s;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 .post-box h3 {
@@ -51,16 +68,28 @@ body {
     font-size: 18px;
 }
 
+/* ==================== REMOVE BUTTON (NEW SVG VERSION) ==================== */
+
 .remove-btn {
     float:right;
-    background:#dc3545;
-    color:white;
+    background:#ff4d4f;
     border:0;
-    padding:4px 10px;
+    padding:5px 10px;
     border-radius:6px;
     cursor:pointer;
     margin-top:-35px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
+
+.remove-btn svg {
+    width: 14px;
+    height: 14px;
+    fill:white;
+}
+
+/* ==================== INPUTS ==================== */
 
 label {
     font-weight: bold;
@@ -79,6 +108,7 @@ textarea {
     margin-top: 6px;
     box-sizing: border-box;
     font-size: 15px;
+    transition: 0.15s;
 }
 
 input:focus,
@@ -99,20 +129,21 @@ textarea:focus {
     font-size: 15px;
 }
 
+/* ==================== SLIDE-DOWN ANIMATION ==================== */
+
 .service-options {
     margin-left: 24px;
     margin-top: 12px;
+    overflow: hidden;
+    max-height: 0;
+    transition: max-height 0.25s ease-out;
 }
 
-.total-row {
-    text-align: right;
-    font-size: 22px;
-    font-weight: bold;
-    margin-top: 30px;
-    background: #f1f5ff;
-    padding: 12px 16px;
-    border-radius: 10px;
+.service-options.show {
+    max-height: 500px;
 }
+
+/* ==================== BUTTONS ==================== */
 
 .add-post-btn {
     width: 100%;
@@ -138,6 +169,16 @@ textarea:focus {
     margin-top: 30px;
     cursor: pointer;
     font-weight: bold;
+}
+
+.total-row {
+    text-align: right;
+    font-size: 22px;
+    font-weight: bold;
+    margin-top: 30px;
+    background: #f1f5ff;
+    padding: 12px 16px;
+    border-radius: 10px;
 }
 
 .footer {
@@ -189,8 +230,7 @@ textarea:focus {
 
 <div class="footer">Website created by Toridochi</div>
 
-
-<!-- ================= JS GIỮ NGUYÊN ================= -->
+<!-- ==================== JS ==================== -->
 
 <script>
 let turnstileToken = "";
@@ -201,6 +241,8 @@ function turnstileDone(token) {
 
 let postCount = 0;
 
+/* ==================== ADD POST BOX ==================== */
+
 function addPostBox() {
     postCount++;
 
@@ -210,7 +252,20 @@ function addPostBox() {
 
     div.innerHTML = `
         <h3>Post #${postCount}</h3>
-        <button class="remove-btn" onclick="removePost(${postCount})">X</button>
+
+        <button class="remove-btn" onclick="removePost(${postCount})">
+            <svg viewBox="0 0 448 512">
+                <path d="M135.2 17.7c2.7-10.7 12.4-17.7 23.4-17.7h130.9c11 
+                0 20.7 7 23.4 17.7L328 32H432c8.8 0 16 7.2 
+                16 16s-7.2 16-16 16h-16l-21.2 
+                372.3c-1.5 26.5-23.5 47.7-50 
+                47.7H103.2c-26.6 
+                0-48.5-21.2-50-47.7L32 
+                64H16C7.2 64 0 56.8 0 
+                48s7.2-16 16-16H120l15.2-14.3z"/>
+            </svg>
+        </button>
+
         <div style="clear:both;"></div>
 
         <label>Post Link</label>
@@ -220,7 +275,7 @@ function addPostBox() {
         <div class="checkbox">
             <input type="checkbox" id="view_${postCount}" onchange="toggleService(${postCount}, 'view')"> Views
         </div>
-        <div id="view_wrap_${postCount}" class="service-options" style="display:none;">
+        <div id="view_wrap_${postCount}" class="service-options">
             <label>Number of Views</label>
             <input type="number" id="view_amount_${postCount}" min="5000" value="5000" 
                 oninput="validateMin(${postCount}, 'view'); updateTotal();">
@@ -233,7 +288,7 @@ function addPostBox() {
         <div class="checkbox">
             <input type="checkbox" id="comment_${postCount}" onchange="toggleService(${postCount}, 'comment')"> Comments
         </div>
-        <div id="comment_wrap_${postCount}" class="service-options" style="display:none;">
+        <div id="comment_wrap_${postCount}" class="service-options">
             <label>Number of Comments</label>
             <input type="number" id="comment_amount_${postCount}" min="10" value="10" 
                 oninput="validateMin(${postCount}, 'comment'); updateTotal();">
@@ -247,7 +302,7 @@ function addPostBox() {
         <div class="checkbox">
             <input type="checkbox" id="like_${postCount}" onchange="toggleService(${postCount}, 'like')"> Likes
         </div>
-        <div id="like_wrap_${postCount}" class="service-options" style="display:none;">
+        <div id="like_wrap_${postCount}" class="service-options">
             <label>Number of Likes</label>
             <input type="number" id="like_amount_${postCount}" min="100" value="100" 
                 oninput="validateMin(${postCount}, 'like'); updateTotal();">
@@ -261,7 +316,7 @@ function addPostBox() {
             <input type="checkbox" id="combo_${postCount}" onchange="toggleService(${postCount}, 'combo')"> 
             Combo (300 likes + 30 comments + 3000 views)
         </div>
-        <div id="combo_wrap_${postCount}" class="service-options" style="display:none;">
+        <div id="combo_wrap_${postCount}" class="service-options">
             <label>Number of Combos</label>
             <input type="number" id="combo_amount_${postCount}" min="1" value="1" 
                 oninput="validateMin(${postCount}, 'combo'); updateTotal();">
@@ -273,16 +328,44 @@ function addPostBox() {
     `;
 
     document.getElementById("posts_wrapper").appendChild(div);
+
+    /* Auto-focus */
+    document.getElementById(`link_${postCount}`).focus();
+
     updateTotal();
 }
 
+/* Render the first box */
 addPostBox();
 
+/* ==================== SERVICE TOGGLE (SLIDE DOWN) ==================== */
+
 function toggleService(id, type) {
-    document.getElementById(`${type}_wrap_${id}`).style.display =
-        document.getElementById(`${type}_${id}`).checked ? "block" : "none";
+    const elem = document.getElementById(`${type}_wrap_${id}`);
+    if (document.getElementById(`${type}_${id}`).checked) {
+        elem.classList.add("show");
+    } else {
+        elem.classList.remove("show");
+    }
     updateTotal();
 }
+
+/* ==================== AUTO FORMAT LINK ==================== */
+document.addEventListener("input", function(e){
+    if (e.target.id.startsWith("link_")) {
+        let val = e.target.value.trim();
+
+        if (val.startsWith("x.com") || val.startsWith("twitter.com")) {
+            e.target.value = "https://" + val;
+        }
+
+        if (val.startsWith("www.")) {
+            e.target.value = "https://" + val.slice(4);
+        }
+    }
+});
+
+/* ==================== VALIDATION ==================== */
 
 function validateMin(id, type) {
     const input = document.getElementById(`${type}_amount_${id}`);
@@ -302,6 +385,8 @@ function validateMin(id, type) {
     note.style.color = "#555";
     return true;
 }
+
+/* ==================== TOTAL PRICE ==================== */
 
 function updateTotal() {
     let total = 0;
@@ -334,6 +419,8 @@ function updateTotal() {
     return total;
 }
 
+/* ==================== SUBMIT ORDER ==================== */
+
 async function submitOrder() {
     if (!turnstileToken) {
         alert("Please verify you are human.");
@@ -342,14 +429,12 @@ async function submitOrder() {
 
     const contact = document.getElementById("contact").value.trim();
 
-    // Validate email format
+    // Validate email
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(contact)) {
         alert("Please enter a valid email address.");
         document.getElementById("contact").style.border = "2px solid red";
         return;
-    } else {
-        document.getElementById("contact").style.border = "1px solid #ccc";
     }
 
     const twitterRegex = /^https?:\/\/(x|twitter)\.com\/([A-Za-z0-9_]{1,50})\/status\/(\d+)$/;
@@ -362,12 +447,6 @@ async function submitOrder() {
 
         const linkField = document.getElementById(`link_${i}`);
         const link = linkField.value.trim();
-
-        if (!link) {
-            alert(`Post #${i}: Please enter a valid X/Twitter post link.`);
-            linkField.style.border = "2px solid red";
-            return;
-        }
 
         if (!twitterRegex.test(link)) {
             alert(`Post #${i}: Invalid X/Twitter post URL.`);
@@ -425,6 +504,8 @@ async function submitOrder() {
     window.location.href =
         `/payment.html?id=${data.order.id}&t=${data.order.public_token}&amount=${data.order.price}`;
 }
+
+/* ==================== REMOVE POST ==================== */
 
 function removePost(id) {
     if (id === 1) {
