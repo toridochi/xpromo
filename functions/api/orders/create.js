@@ -42,9 +42,14 @@ export async function onRequestPost({ request, env }) {
 
   const result = await stmt.run();
 
-  return Response.json({
-    order: {
-      id: result.lastRowId,
+// Lấy ID đúng chuẩn D1
+const row = await env.DB.prepare(
+  "SELECT last_insert_rowid() AS id"
+).first();
+
+return Response.json({
+  order: {
+    id: row.id,
       public_token,
       price
     }
