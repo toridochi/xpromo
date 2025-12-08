@@ -118,10 +118,14 @@ async function loadOrder() {
     catch { noteData = {}; }
 
     // CUSTOMER NOTE
-    document.getElementById("userNote").innerText =
-        noteData.customer_note && noteData.customer_note.trim() !== ""
-        ? noteData.customer_note
-        : "(No note)";
+    const noteText =
+    (noteData.user_note && noteData.user_note.trim() !== "")
+        ? noteData.user_note
+        : (noteData.customer_note && noteData.customer_note.trim() !== "")
+            ? noteData.customer_note
+            : "(No note)";
+
+document.getElementById("userNote").innerText = noteText;
 
     // POSTS
     const postsBox = document.getElementById("posts");
