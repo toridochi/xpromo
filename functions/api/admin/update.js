@@ -1,32 +1,28 @@
+// /functions/api/admin/update.js
+import { verifyAdmin } from "./verify";
+
 export async function onRequestPost({ request, env }) {
-    const auth = request.headers.get("Authorization");
-    if (!auth || !auth.startsWith("Bearer ")) {
-        return new Response("Unauthorized", { status: 403 });
-    }
 
-    // 🔐 Verify admin token
-    const token = auth.split(" ")[1];
-    const verify = await env.ADMIN_VERIFY(token);
-    if (!verify) {
-        return new Response("Invalid token", { status: 403 });
-    }
+    // 1. Check admin auth
+    const admin = await verifyAdmin(request, env);
+    if (!admin) return new Response("Unauthorized", { status: 403 });
 
+    // 2. Read JSON body
     const body = await request.json();
     const { id, status } = body;
 
     if (!id || !status)
         return new Response("Missing id or status", { status: 400 });
 
-    // Lấy order để lấy email khách
-    const order = await env.DB.prepare(
-        "SELECT * FROM orders WHERE id = ?"
-    ).bind(id).first();
+    // 3. Get order
+    const order = await env.DB
+        .prepare("SELECT * FROM orders WHERE id = ?")
+        .bind(id)
+        .first();
 
-    if (!order) {
-        return new Response("Order not found", { status: 404 });
-    }
+    if (!order) return new Response("Order not found", { status: 404 });
 
-    // Cập nhật status
+    // 4. Update order
     await env.DB.prepare(
         "UPDATE orders SET status = ?, updated_at = ? WHERE id = ?"
     )
@@ -34,12 +30,12 @@ export async function onRequestPost({ request, env }) {
     .run();
 
 
-    // -------------------------------
-    // 📧 SEND EMAIL TO CUSTOMER
-    // -------------------------------
+    // ----------------------------------
+    // 📧 SEND EMAIL (optional)
+    // ----------------------------------
     try {
-        const note = JSON.parse(order.note);
-        const customerEmail = note.email || order.contact;
+        const note = JSON.parse(order.note || "{}");
+        const customerEmail = note.customer_email || order.contact;
 
         if (customerEmail) {
             let subject = "";
@@ -48,17 +44,15 @@ export async function onRequestPost({ request, env }) {
             if (status === "confirmed" || status === "paid_waiting_confirmation") {
                 subject = "Your Order Has Been Confirmed";
                 message = `
-                    Hi, your order #${order.id} has been confirmed.
-                    We have received your payment.
-                `;
+Your order #${order.id} has been confirmed.
+We received your payment.`;
             }
 
             if (status === "completed") {
                 subject = "Your Order Is Completed";
                 message = `
-                    Hi, your order #${order.id} has been completed.
-                    Thank you for using our service!
-                `;
+Your order #${order.id} has been completed.
+Thank you for using our service!`;
             }
 
             if (subject) {
@@ -73,16 +67,14 @@ export async function onRequestPost({ request, env }) {
 }
 
 
-// ---------------------------------------
-// 📧 RESEND EMAIL FUNCTION
-// ---------------------------------------
+// ---------------------------------
+// 📧 SEND EMAIL
+// ---------------------------------
 async function sendEmail(env, to, subject, text) {
-    const apiKey = env.RESEND_API_KEY;
-
     return await fetch("https://api.resend.com/emails", {
         method: "POST",
         headers: {
-            "Authorization": `Bearer ${apiKey}`,
+            "Authorization": `Bearer ${env.RESEND_API_KEY}`,
             "Content-Type": "application/json"
         },
         body: JSON.stringify({
