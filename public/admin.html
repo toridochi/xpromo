@@ -179,24 +179,22 @@ async function loadOrders() {
 
     data.forEach(order => {
         
-        // ----------- PARSE NOTE SAFE ------------
         let noteData = {};
-        try { noteData = JSON.parse(order.note); } 
+        try { noteData = JSON.parse(order.note); }
         catch { noteData = {}; }
 
         const userNote = noteData.user_note || "(No note)";
         const combo = noteData.combo || null;
-        const posts = noteData.posts || [];
+        const posts = Array.isArray(noteData.posts) ? noteData.posts : [];
 
-        // ----------- BUILD DETAILS HTML ----------
         let detailsHTML = `
             <div class="note-box"><b>Customer Note:</b><br>${userNote}</div>
         `;
 
-        if (combo) {
+        if (combo && combo.count) {
             detailsHTML += `
                 <div class="combo-box">
-                    <b>Combo Selected:</b><br>
+                    <b>Combo Package:</b><br>
                     Count: ${combo.count}<br>
                     Price: ${combo.price} USDT
                 </div>
@@ -211,6 +209,7 @@ async function loadOrders() {
                     ${p.views ? `Views: ${p.views}<br>` : ""}
                     ${p.comments ? `Comments: ${p.comments}<br>` : ""}
                     ${p.likes ? `Likes: ${p.likes}<br>` : ""}
+                    ${p.combo ? `Combo Packages: ${p.combo.count} × ${p.combo.price} USDT<br>` : ""}
                 </div>
             `;
         });
