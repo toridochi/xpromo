@@ -63,29 +63,31 @@ export async function onRequestPost({ request, env }) {
   const orderId = row.id;
 
   // 4️⃣ ⭐ SEND TO WORKER TO SAVE INTO KV ⭐
-  const workerRes = await fetch("https://polished-glade-ad1fa1.humada.workers.dev", {
+  await fetch("https://polished-glade-ad1fa1.humada.workers.dev", {
     method: "POST",
-    headers: { 
+    headers: {
       "Content-Type": "application/json",
       "Access-Control-Allow-Origin": "*"
     },
     body: JSON.stringify({
       type: "new_order",
+
+      // GỬI ĐỦ THÔNG TIN CHO WORKER
       orderId,
-      amount: price
+      amount: price,
+      contact,
+      note: fixedNote,
+      package: pkg,
+      post_link
     })
   });
-
-  // Debug log if needed
-  const workerText = await workerRes.text();
 
   // 5️⃣ RETURN ORDER TO FRONTEND
   return Response.json({
     order: {
       id: orderId,
       public_token,
-      price,
-      worker_status: workerText
+      price
     }
   });
 }
