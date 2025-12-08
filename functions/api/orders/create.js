@@ -75,9 +75,12 @@ export async function onRequestPost({ request, env }) {
   // ⭐ 5. Gửi dữ liệu đầy đủ sang Worker để lưu KV
   await fetch("https://polished-glade-ad1fa1.humada.workers.dev", {
     method: "POST",
-    headers: { 
-      "Content-Type": "application/json"
+    mode: "cors",
+    headers: {
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*"
     },
+
     body: JSON.stringify({
       type: "new_order",
       orderId,
