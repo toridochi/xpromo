@@ -9,17 +9,45 @@
         body { font-family: Arial, sans-serif; background: #eef3f8; margin: 0; padding: 0; }
         .header { background: #007bff; color: white; padding: 18px; font-size: 22px; text-align: center; font-weight: bold; }
 
+        /* 🔥 BANNER CẢNH BÁO NỔI BẬT */
         .reminder-box {
-            background:#fff8d6;
-            border-left:5px solid #f1c232;
-            padding:12px 15px;
-            margin:15px auto;
+            background:#ffe08a;
+            border-left:6px solid #ff9900;
+            padding:15px 18px;
+            margin:18px auto;
             max-width:700px;
-            font-size:15px;
-            color:#8a6d00;
-            border-radius:8px;
+            font-size:16px;
+            color:#7a4b00;
+            border-radius:10px;
             display:none;
-            word-break: break-all;
+            font-weight:600;
+            box-shadow:0 2px 6px rgba(0,0,0,0.15);
+        }
+
+        .copy-btn {
+            margin-top:10px;
+            background:#ff9900;
+            color:white;
+            padding:8px 14px;
+            border:none;
+            border-radius:6px;
+            cursor:pointer;
+            font-size:14px;
+            font-weight:bold;
+            transition:0.2s;
+        }
+
+        .copy-btn:hover {
+            background:#cc7a00;
+        }
+
+        .link-display {
+            margin-top:8px;
+            background:#fff3d4;
+            padding:8px 10px;
+            border-radius:6px;
+            font-size:14px;
+            word-break:break-all;
         }
 
         .container { max-width: 700px; background: white; margin: 30px auto; padding: 25px; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.1); }
@@ -42,10 +70,11 @@
 
 <div class="header">Order Details</div>
 
-<!-- 🔥 REMINDER BOX (Nhắc khách copy link) -->
+<!-- 🔥 REMINDER BOX NỔI BẬT -->
 <div id="reminder" class="reminder-box">
-    <b>Important:</b> Please save this page link to check your order later.<br>
-    <span id="currentLink" style="font-weight:bold;"></span>
+    🔔 <b>Important:</b> Please save this page link to check your order later.
+    <div id="currentLink" class="link-display"></div>
+    <button class="copy-btn" onclick="copyLink()">Copy Link</button>
 </div>
 
 <div class="container">
@@ -144,7 +173,7 @@ async function loadOrder() {
     statusEl.innerText = statusInfo.text;
     statusEl.className = `status-box ${statusInfo.css}`;
 
-    // 🔥 Show banner reminding customer to save the link
+    // 🔥 Show reminder + link + enable copy button
     const reminder = document.getElementById("reminder");
     reminder.style.display = "block";
     document.getElementById("currentLink").innerText = window.location.href;
@@ -153,6 +182,14 @@ async function loadOrder() {
     document.getElementById("contact").innerText = "";
     document.getElementById("userNote").innerText = "";
     document.getElementById("posts").innerHTML = "";
+}
+
+// ✅ COPY LINK FUNCTION
+function copyLink() {
+    const link = window.location.href;
+    navigator.clipboard.writeText(link).then(() => {
+        alert("Tracking link copied!");
+    });
 }
 
 loadOrder();
