@@ -1,52 +1,223 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Order Details</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Order Details</title>
 
-    <style>
-        body { font-family: Arial, sans-serif; background: #eef3f8; margin: 0; padding: 0; }
-        .header { background: #007bff; color: white; padding: 18px; font-size: 22px; text-align: center; font-weight: bold; }
-/* DARK MODE */
+<style>
+
+/* =====================
+   BASE LIGHT MODE
+   ===================== */
+
+body {
+    font-family: Arial, sans-serif;
+    background: #eef3f8;
+    margin: 0;
+    padding: 0;
+}
+
+.header {
+    background: #007bff;
+    color: white;
+    padding: 18px;
+    font-size: 22px;
+    text-align: center;
+    font-weight: bold;
+}
+
+.container {
+    max-width: 700px;
+    background: white;
+    margin: 30px auto;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+}
+
+.row {
+    margin-bottom: 18px;
+}
+
+.label {
+    font-weight: bold;
+    margin-bottom: 4px;
+    display: block;
+    color: #222;
+}
+
+.value {
+    font-size: 16px;
+    color: #444;
+}
+
+.status-box {
+    padding: 12px;
+    border-radius: 8px;
+    font-weight: bold;
+    display: inline-block;
+    margin-top: 6px;
+}
+
+.status-pending { background: #fff3cd; color: #b58b00; }
+.status-paid_waiting { background: #cfe2ff; color: #084298; }
+.status-completed { background: #d1e7dd; color: #0f5132; }
+.status-unknown { background: #e2e3e5; color: #41464b; }
+
+.note-box {
+    background: #fff7e6;
+    padding: 12px;
+    border-left: 4px solid #ffb84d;
+    border-radius: 6px;
+    white-space: pre-wrap;
+}
+
+.post-box {
+    background: #f8f9fa;
+    padding: 12px;
+    border-radius: 8px;
+    margin-top: 12px;
+}
+
+a {
+    color: #007bff;
+    word-break: break-all;
+}
+
+.footer {
+    text-align: center;
+    margin-top: 40px;
+    color: #777;
+    font-size: 14px;
+}
+
+/* 🔔 REMINDER BOX */
+.reminder-box {
+    background:#ffe08a;
+    border-left:6px solid #ff9900;
+    padding:15px 18px;
+    margin:18px auto;
+    max-width:700px;
+    font-size:16px;
+    color:#7a4b00;
+    border-radius:10px;
+    display:none;
+    font-weight:600;
+    box-shadow:0 2px 6px rgba(0,0,0,0.15);
+}
+
+.copy-btn {
+    margin-top:10px;
+    background:#ff9900;
+    color:white;
+    padding:8px 14px;
+    border:none;
+    border-radius:6px;
+    cursor:pointer;
+    font-size:14px;
+    font-weight:bold;
+    transition:0.2s;
+}
+
+.copy-btn:hover {
+    background:#cc7a00;
+}
+
+.copy-btn.copied {
+    background:#28a745 !important;
+}
+
+.link-display {
+    margin-top:8px;
+    background:#fff3d4;
+    padding:8px 10px;
+    border-radius:6px;
+    font-size:14px;
+    word-break:break-all;
+}
+
+/* =====================
+   DARK MODE
+   ===================== */
+
 body.dark {
     background: #0f1117 !important;
     color: #e8e8e8 !important;
 }
 
-body.dark .container {
-    background: #181a20 !important;
-    color: #e8e8e8 !important;
-    border-color: #2a2d33 !important;
-}
-
-body.dark input,
-body.dark textarea {
-    background: #111318 !important;
-    color: #e8e8e8 !important;
-    border: 1px solid #3a3d45 !important;
-}
-
-body.dark .box,
-body.dark .card {
-    background: #181a20 !important;
-    border-color: #33363d !important;
-}
-
-body.dark .status-box {
-    background: #2a2d33 !important;
-    color: #fff !important;
-}
-
-body.dark .note-small {
-    color: #ccc !important;
-}
-
-body.dark .back-btn {
+body.dark .header {
     background: #0b5bd9 !important;
 }
 
-/* Toggle button */
+body.dark .container {
+    background: #181a20 !important;
+    color: #e8e8e8 !important;
+}
+
+body.dark .label {
+    color: #d7d7d7 !important;
+}
+
+body.dark .value {
+    color: #e6e6e6 !important;
+}
+
+body.dark .post-box {
+    background: #1e222a !important;
+    border: 1px solid #2f333a !important;
+}
+
+body.dark a {
+    color: #4a90ff !important;
+}
+
+body.dark .note-box {
+    background: #1e2025 !important;
+    border-left-color: #ffaa3c !important;
+    color: #e8e8e8 !important;
+}
+
+body.dark .status-pending {
+    background:#655d2a !important;
+    color:#ffe083 !important;
+}
+body.dark .status-paid_waiting {
+    background:#2b3b55 !important;
+    color:#9ec5ff !important;
+}
+body.dark .status-completed {
+    background:#1d3b2e !important;
+    color:#74d6a1 !important;
+}
+body.dark .status-unknown {
+    background:#3a3a3c !important;
+    color:#d1d1d1 !important;
+}
+
+body.dark .reminder-box {
+    background:#2e2620 !important;
+    border-left-color:#ff9900 !important;
+    color:#ffd89d !important;
+}
+
+body.dark .link-display {
+    background:#3a2f24 !important;
+    color:#ffe0b3 !important;
+}
+
+body.dark .copy-btn {
+    background:#1e5cff !important;
+}
+
+body.dark .footer {
+    color: #aaaaaa !important;
+}
+
+/* =====================
+   DARK MODE TOGGLE
+   ===================== */
+
 .theme-toggle {
     position: fixed;
     top: 18px;
@@ -70,78 +241,12 @@ body.dark .theme-toggle {
     color: #eee;
 }
 
-        
-        /* 🔥 BANNER CẢNH BÁO NỔI BẬT */
-        .reminder-box {
-            background:#ffe08a;
-            border-left:6px solid #ff9900;
-            padding:15px 18px;
-            margin:18px auto;
-            max-width:700px;
-            font-size:16px;
-            color:#7a4b00;
-            border-radius:10px;
-            display:none;
-            font-weight:600;
-            box-shadow:0 2px 6px rgba(0,0,0,0.15);
-        }
-
-        .copy-btn {
-            margin-top:10px;
-            background:#ff9900;
-            color:white;
-            padding:8px 14px;
-            border:none;
-            border-radius:6px;
-            cursor:pointer;
-            font-size:14px;
-            font-weight:bold;
-            transition:0.2s;
-        }
-
-        .copy-btn:hover {
-            background:#cc7a00;
-        }
-
-        /* Hiệu ứng copy thành công */
-        .copy-btn.copied {
-            background:#28a745 !important;
-            color:white !important;
-        }
-
-        .link-display {
-            margin-top:8px;
-            background:#fff3d4;
-            padding:8px 10px;
-            border-radius:6px;
-            font-size:14px;
-            word-break:break-all;
-        }
-
-        .container { max-width: 700px; background: white; margin: 30px auto; padding: 25px; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.1); }
-
-        .row { margin-bottom: 18px; }
-        .label { font-weight: bold; margin-bottom: 4px; display: block; color: #222; }
-        .value { font-size: 16px; color: #444; }
-
-        .status-box { padding: 12px; border-radius: 8px; font-weight: bold; display: inline-block; margin-top: 6px; }
-        .status-pending { background: #fff3cd; color: #b58b00; }
-        .status-paid_waiting { background: #cfe2ff; color: #084298; }
-        .status-completed { background: #d1e7dd; color: #0f5132; }
-        .status-unknown { background: #e2e3e5; color: #41464b; }
-
-        .note-box { background: #fff7e6; padding: 12px; border-left: 4px solid #ffb84d; border-radius: 6px; white-space: pre-wrap; }
-
-        .post-box { background: #f8f9fa; padding: 12px; border-radius: 8px; margin-top: 12px; }
-        a { color: #007bff; word-break: break-all; }
-
-        .footer { text-align: center; margin-top: 40px; color: #777; font-size: 14px; }
-    </style>
+</style>
 </head>
 
 <body>
-    <div class="theme-toggle" onclick="toggleTheme()">🌙</div>
 
+<div class="theme-toggle" onclick="toggleTheme()">🌙</div>
 
 <div class="header">Order Details</div>
 
@@ -206,7 +311,7 @@ body.dark .theme-toggle {
 
 <script>
 
-    /* ========= THEME SYSTEM ========= */
+/* ========= THEME SYSTEM ========= */
 
 function applyTheme(theme) {
     if (theme === "dark") {
@@ -234,6 +339,7 @@ function toggleTheme() {
     applyTheme(saved);
 })();
 
+/* ========= ORDER LOGIC ========= */
 
 function translateStatus(s) {
     switch (s) {
@@ -258,7 +364,10 @@ async function loadOrder() {
     let data;
 
     try { data = await res.json(); }
-    catch { document.getElementById("statusBox").innerText = "Error loading order."; return; }
+    catch { 
+        document.getElementById("statusBox").innerText = "Error loading order."; 
+        return; 
+    }
 
     if (!data.order) {
         document.getElementById("statusBox").innerText = "Order not found.";
@@ -309,13 +418,13 @@ async function loadOrder() {
         `;
     });
 
-    // 🔥 Show reminder with link
+    // Show reminder box
     const reminder = document.getElementById("reminder");
     reminder.style.display = "block";
     document.getElementById("currentLink").innerText = window.location.href;
 }
 
-// ✨ Copy link (hiệu ứng đẹp)
+/* Copy tracking link */
 function copyLink() {
     const link = window.location.href;
     navigator.clipboard.writeText(link).then(() => {
