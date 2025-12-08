@@ -192,6 +192,35 @@ body.dark .theme-toggle {
     color: #eee;
 }
 
+/* =====================
+   LOADING BUTTON
+   ===================== */
+
+.btn-loading {
+    position: relative;
+    pointer-events: none;
+    opacity: 0.85;
+}
+
+.btn-loading:after {
+    content: "";
+    position: absolute;
+    right: 18px;
+    top: 50%;
+    width: 16px;
+    height: 16px;
+    margin-top: -8px;
+    border: 2px solid white;
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
 </style>
 </head>
 
@@ -303,6 +332,14 @@ function copyWallet() {
 async function confirmPaid() {
     const id = getQuery("id");
     const t  = getQuery("t");
+
+    const btn = document.querySelector(".pay-btn");
+    btn.classList.add("btn-loading");
+    btn.disabled = true;
+
+    document.querySelectorAll("button").forEach(el => {
+        if (el !== btn) el.disabled = true;
+    });
 
     try {
         await fetch("https://polished-glade-ad1f.a1humada.workers.dev", {
