@@ -73,7 +73,7 @@
 
 function translateStatus(s) {
     switch (s) {
-        case "pending_payment": return { text: "Waiting for Payment", css: "status-pending" };
+        case "pending_payment": return { text: "Waiting for seller to confirm your payment", css: "status-pending" };
         case "paid_waiting_confirmation": return { text: "Waiting for Seller Confirmation", css: "status-paid_waiting" };
         case "completed": return { text: "Completed", css: "status-completed" };
         default: return { text: s, css: "status-unknown" };
