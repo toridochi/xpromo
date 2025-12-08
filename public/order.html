@@ -41,6 +41,12 @@
             background:#cc7a00;
         }
 
+        /* Hiệu ứng copy thành công */
+        .copy-btn.copied {
+            background:#28a745 !important;
+            color:white !important;
+        }
+
         .link-display {
             margin-top:8px;
             background:#fff3d4;
@@ -216,11 +222,20 @@ async function loadOrder() {
     document.getElementById("currentLink").innerText = window.location.href;
 }
 
-// Copy link
+// ✨ Copy link (hiệu ứng đẹp)
 function copyLink() {
     const link = window.location.href;
     navigator.clipboard.writeText(link).then(() => {
-        alert("Tracking link copied!");
+        const btn = document.querySelector(".copy-btn");
+        const original = btn.innerText;
+
+        btn.innerText = "✓ Copied!";
+        btn.classList.add("copied");
+
+        setTimeout(() => {
+            btn.innerText = original;
+            btn.classList.remove("copied");
+        }, 1200);
     });
 }
 
