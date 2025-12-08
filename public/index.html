@@ -385,7 +385,8 @@ if (!emailRegex.test(contact)) {
 let orderId = data.order.id;
 
 window.location.href =
-  `/payment.html?id=${encodeURIComponent(orderId)}&t=${encodeURIComponent(data.order.public_token)}&amount=${updateTotal()}`;
+  `/payment.html?id=${data.order.id}&t=${data.order.public_token}&amount=${data.order.price}`;
+
 
 
 }
