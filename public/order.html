@@ -20,11 +20,6 @@
         .status-completed { background: #d1e7dd; color: #0f5132; }
         .status-unknown { background: #e2e3e5; color: #41464b; }
 
-        .note-box { background: #fff7e6; padding: 12px; border-left: 4px solid #ffb84d; border-radius: 6px; white-space: pre-wrap; }
-
-        .post-box { background: #f8f9fa; padding: 12px; border-radius: 8px; margin-top: 12px; }
-        a { color: #007bff; word-break: break-all; }
-
         .footer { text-align: center; margin-top: 40px; color: #777; font-size: 14px; }
     </style>
 </head>
@@ -50,22 +45,24 @@
         <span id="amount" class="value">...</span> USDT
     </div>
 
-    <div class="row">
+    <!-- Hidden fields (Contact / User Note / Posts) -->
+    <div class="row" style="display:none;">
         <span class="label">Contact:</span>
-        <span id="contact" class="value">...</span>
+        <span id="contact" class="value"></span>
     </div>
 
-    <div class="row">
+    <div class="row" style="display:none;">
         <span class="label">Customer Note:</span>
-        <div id="userNote" class="note-box">(No note)</div>
+        <div id="userNote"></div>
     </div>
 
-    <div class="row">
+    <div class="row" style="display:none;">
         <span class="label">Posts:</span>
         <div id="posts"></div>
     </div>
 
 </div>
+
 <div style="text-align:center; margin-top:25px;">
     <a href="index.html">
         <button style="
@@ -118,48 +115,19 @@ async function loadOrder() {
 
     const order = data.order;
 
+    // Display only safe information
     document.getElementById("orderId").innerText = order.id;
     document.getElementById("amount").innerText = order.price;
-    document.getElementById("contact").innerText = order.contact;
 
     const statusInfo = translateStatus(order.status);
     const statusEl = document.getElementById("statusBox");
     statusEl.innerText = statusInfo.text;
     statusEl.className = `status-box ${statusInfo.css}`;
 
-    // --- PARSE NOTE ---
-    let noteData = {};
-    try { noteData = JSON.parse(order.note || "{}"); }
-    catch { noteData = {}; }
-
-    // CUSTOMER NOTE
-    const noteText =
-    (noteData.user_note && noteData.user_note.trim() !== "")
-        ? noteData.user_note
-        : (noteData.customer_note && noteData.customer_note.trim() !== "")
-            ? noteData.customer_note
-            : "(No note)";
-
-document.getElementById("userNote").innerText = noteText;
-
-    // POSTS
-    const postsBox = document.getElementById("posts");
-    const posts = noteData.posts || [];
-    postsBox.innerHTML = "";
-
-    posts.forEach((p, i) => {
-        postsBox.innerHTML += `
-            <div class="post-box">
-                <b>Post #${i+1}</b><br>
-                <a href="${p.link}" target="_blank">${p.link}</a><br>
-                ${p.views ? `Views: ${p.views}<br>` : ""}
-                ${p.comments ? `Comments: ${p.comments}<br>` : ""}
-                ${p.likes ? `Likes: ${p.likes}<br>` : ""}
-                ${p.combo ? `Combo Packages: ${p.combo.count} × 14 USDT<br>` : ""}
-            </div>
-        `;
-    });
-
+    // Hide everything sensitive
+    document.getElementById("contact").innerText = "";
+    document.getElementById("userNote").innerText = "";
+    document.getElementById("posts").innerHTML = "";
 }
 
 loadOrder();
