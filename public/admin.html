@@ -22,7 +22,7 @@
         }
 
         .container {
-            max-width: 1000px;
+            max-width: 1100px;
             margin: 25px auto;
             background: white;
             padding: 25px;
@@ -50,6 +50,7 @@
             border-bottom: 1px solid #ddd;
             text-align: left;
             font-size: 15px;
+            vertical-align: top;
         }
 
         th { background: #f5f5f5; }
@@ -62,7 +63,6 @@
             display: inline-block;
         }
 
-        /* Status Color Fix */
         .pending_payment { background: #fff3cd; color: #927400; }
         .paid_waiting_confirmation { background: #cfe2ff; color: #084298; }
         .confirmed { background: #bfe7ff; color: #064270; }
@@ -95,6 +95,23 @@
             color: #777;
             font-size: 14px;
         }
+
+        .note-box {
+            background: #fff7e6;
+            padding: 10px;
+            border-left: 4px solid #ffb84d;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            white-space: pre-wrap;
+        }
+
+        .combo-box {
+            background: #e6f7ff;
+            padding: 10px;
+            border-left: 4px solid #33aaff;
+            border-radius: 6px;
+            margin-bottom: 10px;
+        }
     </style>
 </head>
 
@@ -117,7 +134,7 @@
                     <th>Status</th>
                     <th>Contact</th>
                     <th>Amount</th>
-                    <th>Posts</th>
+                    <th>Details</th>
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -151,33 +168,49 @@ function mapStatus(status) {
     }
 }
 
-
 async function loadOrders() {
     const res = await fetch("/api/admin/orders", {
         headers: { "Authorization": "Bearer " + ADMIN_KEY }
     });
 
     const data = await res.json();
-
     const body = document.getElementById("orderBody");
     body.innerHTML = "";
 
     data.forEach(order => {
-        let postsHTML = "";
-        let posts;
+        
+        // ----------- PARSE NOTE SAFE ------------
+        let noteData = {};
+        try { noteData = JSON.parse(order.note); } 
+        catch { noteData = {}; }
 
-        try { posts = JSON.parse(order.note).posts; }
-        catch { posts = []; }
+        const userNote = noteData.user_note || "(No note)";
+        const combo = noteData.combo || null;
+        const posts = noteData.posts || [];
+
+        // ----------- BUILD DETAILS HTML ----------
+        let detailsHTML = `
+            <div class="note-box"><b>Customer Note:</b><br>${userNote}</div>
+        `;
+
+        if (combo) {
+            detailsHTML += `
+                <div class="combo-box">
+                    <b>Combo Selected:</b><br>
+                    Count: ${combo.count}<br>
+                    Price: ${combo.price} USDT
+                </div>
+            `;
+        }
 
         posts.forEach((p, i) => {
-            postsHTML += `
+            detailsHTML += `
                 <div class="post-box">
                     <b>Post #${i+1}</b><br>
                     <a href="${p.link}" target="_blank">${p.link}</a><br>
                     ${p.views ? `Views: ${p.views}<br>` : ""}
                     ${p.comments ? `Comments: ${p.comments}<br>` : ""}
                     ${p.likes ? `Likes: ${p.likes}<br>` : ""}
-                    ${p.combo?.count ? `Combos: ${p.combo.count}<br>` : ""}
                 </div>
             `;
         });
@@ -190,7 +223,7 @@ async function loadOrders() {
                 <td><span class="status ${st.css}">${st.text}</span></td>
                 <td>${order.contact}</td>
                 <td>${order.price} USDT</td>
-                <td>${postsHTML}</td>
+                <td>${detailsHTML}</td>
                 <td>
                     <button class="btn btn-confirm" onclick="updateStatus(${order.id}, 'confirmed')">Confirm</button>
                     <button class="btn btn-complete" onclick="updateStatus(${order.id}, 'completed')">Complete</button>
@@ -199,7 +232,6 @@ async function loadOrders() {
         `;
     });
 }
-
 
 async function updateStatus(id, status) {
     const res = await fetch("/api/admin/update", {
@@ -218,7 +250,6 @@ async function updateStatus(id, status) {
         alert("Failed to update status.");
     }
 }
-
 
 function filterOrders() {
     let value = document.getElementById("search").value.toLowerCase();
