@@ -126,7 +126,7 @@ async function loadOrder() {
         return;
     }
 
-    const res = await fetch(`/api/orders/status?id=${id}&t=${t}`);
+    const res = await fetch(`/api/orders/status?id=${encodeURIComponent(id)}&t=${encodeURIComponent(t)}`);
     const data = await res.json();
 
     if (!data.order) {
