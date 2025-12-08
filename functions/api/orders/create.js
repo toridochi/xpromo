@@ -23,7 +23,7 @@ export async function onRequestPost({ request, env }) {
     return Response.json({ error: "Captcha failed" }, { status: 400 });
   }
 
-  // 2️⃣ LẤY DATA
+  // 2️⃣ GET DATA
   const {
     post_link,
     package: pkg,
@@ -33,12 +33,11 @@ export async function onRequestPost({ request, env }) {
     user_note,
   } = data;
 
-  // Gộp note
   let fixedNote = note || {};
   fixedNote.user_note = user_note || fixedNote.user_note || "";
   const noteString = JSON.stringify(fixedNote);
 
-  // 3️⃣ TẠO ORDER
+  // 3️⃣ CREATE ORDER
   const public_token = crypto.randomUUID();
   const status = "pending_payment";
   const currency = "USDT";
@@ -46,7 +45,7 @@ export async function onRequestPost({ request, env }) {
   const created_at = new Date().toISOString();
   const updated_at = created_at;
 
-  // 4️⃣ LƯU VÀO D1 DATABASE
+  // 4️⃣ SAVE TO D1
   await env.DB.prepare(
     `INSERT INTO orders 
       (post_link, package, contact, note, price, currency, pay_address, status, public_token, created_at, updated_at)
@@ -73,18 +72,18 @@ export async function onRequestPost({ request, env }) {
 
   const orderId = row.id;
 
-  // 5️⃣ ⭐ LƯU ORDER VÀO KV ĐỂ WORKER ĐỌC AMOUNT ⭐
-  await env.KV.put(
-    `order:${orderId}`,
-    JSON.stringify({
+  // 5️⃣ ⭐ GỬI LÊN WORKER ĐỂ LƯU VÀO KV ⭐
+  await fetch("https://polished-glade-ad1fa1.humada.workers.dev", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      type: "new_order",
       orderId,
-      amount: price,
-      status: "pending",
-      created_at: Date.now()
+      amount: price
     })
-  );
+  });
 
-  // 6️⃣ RESPONSE VỀ CLIENT
+  // 6️⃣ RETURN TO FRONTEND
   return Response.json({
     order: {
       id: orderId,
