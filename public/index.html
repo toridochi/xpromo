@@ -136,8 +136,8 @@ textarea {
         Total: <span id="total_price">0.00</span> USD
     </div>
 
-    <label>Contact (Email or X handle)</label>
-    <input type="text" id="contact">
+    <label>Email</label>
+<input type="text" id="contact" placeholder="you@example.com">
 
     <label>Note (Optional)</label>
     <textarea id="note"></textarea>
@@ -294,13 +294,18 @@ function updateTotal() {
 async function submitOrder() {
 
     const contact = document.getElementById("contact").value.trim();
-    if (!contact) {
-        alert("Please enter your contact (Email or X handle).");
-        document.getElementById("contact").style.border = "2px solid red";
-        return;
-    } else {
-        document.getElementById("contact").style.border = "1px solid #ccc";
-    }
+
+// yêu cầu email hợp lệ
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+if (!emailRegex.test(contact)) {
+    alert("Please enter a valid email address.");
+    document.getElementById("contact").style.border = "2px solid red";
+    return;
+} else {
+    document.getElementById("contact").style.border = "1px solid #ccc";
+}
+
 
     const twitterRegex = /^https?:\/\/(x|twitter)\.com\/([A-Za-z0-9_]{1,50})\/status\/(\d+)$/;
 
