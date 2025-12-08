@@ -150,7 +150,7 @@ async function confirmPaid() {
     const id = getQuery("id");
 
     // 🟦 GỬI TỚI WORKER ĐỂ BOT TELEGRAM BÁO "USER PAID"
-    await fetch("https://polished-glade-ad1fa1.humada.workers.dev/", {
+    await fetch("https://polished-glade-ad1fa1.humada.workers.dev", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
