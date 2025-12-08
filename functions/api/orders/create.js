@@ -26,10 +26,8 @@ export async function onRequestPost({ request, env }) {
   // 2️⃣ PARSE ORDER INFO
   const { post_link, package: pkg, contact, note, price, user_note } = data;
 
-  const fixedNote = JSON.stringify({
-    ...note,
-    user_note: user_note || ""
-  });
+  // FIX — chỉ dùng user_note
+  const fixedNote = user_note || "";
 
   // 3️⃣ CREATE ORDER IN D1
   const public_token = crypto.randomUUID();
@@ -39,11 +37,10 @@ export async function onRequestPost({ request, env }) {
   const created_at = new Date().toISOString();
   const updated_at = created_at;
 
-  await env.DB.prepare(
-    `INSERT INTO orders 
+  await env.DB
+    .prepare(`INSERT INTO orders 
       (post_link, package, contact, note, price, currency, pay_address, status, public_token, created_at, updated_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-  )
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
     .bind(
       post_link,
       pkg,
@@ -62,7 +59,7 @@ export async function onRequestPost({ request, env }) {
   const row = await env.DB.prepare("SELECT last_insert_rowid() AS id").first();
   const orderId = row.id;
 
-  // 4️⃣ ⭐ SEND TO WORKER TO SAVE INTO KV ⭐
+  // 4️⃣ SEND DATA TO WORKER
   await fetch("https://polished-glade-ad1fa1.humada.workers.dev", {
     method: "POST",
     headers: {
@@ -71,8 +68,6 @@ export async function onRequestPost({ request, env }) {
     },
     body: JSON.stringify({
       type: "new_order",
-
-      // GỬI ĐỦ THÔNG TIN CHO WORKER
       orderId,
       amount: price,
       contact,
@@ -82,7 +77,7 @@ export async function onRequestPost({ request, env }) {
     })
   });
 
-  // 5️⃣ RETURN ORDER TO FRONTEND
+  // 5️⃣ RETURN ORDER
   return Response.json({
     order: {
       id: orderId,
