@@ -2,7 +2,7 @@ export async function verifyAdmin(request, env) {
     const auth = request.headers.get("Authorization");
     if (!auth || !auth.startsWith("Bearer ")) return null;
 
-    let token;
+    let token; 
     try {
         token = atob(auth.slice(7)); // remove "Bearer "
     } catch {
