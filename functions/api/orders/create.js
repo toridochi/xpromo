@@ -1,7 +1,7 @@
 export async function onRequestPost({ request, env }) {
   const data = await request.json();
 
-  // 1️⃣ CHECK CAPTCHA
+  // 1️⃣ VERIFY CAPTCHA
   const captchaToken = data.turnstile;
   if (!captchaToken) {
     return Response.json({ error: "Missing captcha" }, { status: 400 });
@@ -23,29 +23,22 @@ export async function onRequestPost({ request, env }) {
     return Response.json({ error: "Captcha failed" }, { status: 400 });
   }
 
-  // 2️⃣ GET DATA
-  const {
-    post_link,
-    package: pkg,
-    contact,
-    note,
-    price,
-    user_note,
-  } = data;
+  // 2️⃣ PARSE ORDER INFO
+  const { post_link, package: pkg, contact, note, price, user_note } = data;
 
-  let fixedNote = note || {};
-  fixedNote.user_note = user_note || fixedNote.user_note || "";
-  const noteString = JSON.stringify(fixedNote);
+  const fixedNote = JSON.stringify({
+    ...note,
+    user_note: user_note || ""
+  });
 
-  // 3️⃣ CREATE ORDER
+  // 3️⃣ CREATE ORDER IN D1
   const public_token = crypto.randomUUID();
   const status = "pending_payment";
   const currency = "USDT";
-  const pay_address = "0xef84aad573bc7c530cb397147ee12f773f9ea570";
+  const pay_address = "0x8f5308c729c111555fdae285a8a899281e7d71af";
   const created_at = new Date().toISOString();
   const updated_at = created_at;
 
-  // 4️⃣ SAVE TO D1
   await env.DB.prepare(
     `INSERT INTO orders 
       (post_link, package, contact, note, price, currency, pay_address, status, public_token, created_at, updated_at)
@@ -55,7 +48,7 @@ export async function onRequestPost({ request, env }) {
       post_link,
       pkg,
       contact,
-      noteString,
+      fixedNote,
       price,
       currency,
       pay_address,
@@ -66,16 +59,16 @@ export async function onRequestPost({ request, env }) {
     )
     .run();
 
-  const row = await env.DB.prepare(
-    "SELECT last_insert_rowid() AS id"
-  ).first();
-
+  const row = await env.DB.prepare("SELECT last_insert_rowid() AS id").first();
   const orderId = row.id;
 
-  // 5️⃣ ⭐ GỬI LÊN WORKER ĐỂ LƯU VÀO KV ⭐
-  await fetch("https://polished-glade-ad1fa1.humada.workers.dev", {
+  // 4️⃣ ⭐ SEND TO WORKER TO SAVE INTO KV ⭐
+  const workerRes = await fetch("https://polished-glade-ad1fa1.humada.workers.dev", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { 
+      "Content-Type": "application/json",
+      "Access-Control-Allow-Origin": "*"
+    },
     body: JSON.stringify({
       type: "new_order",
       orderId,
@@ -83,12 +76,16 @@ export async function onRequestPost({ request, env }) {
     })
   });
 
-  // 6️⃣ RETURN TO FRONTEND
+  // Debug log if needed
+  const workerText = await workerRes.text();
+
+  // 5️⃣ RETURN ORDER TO FRONTEND
   return Response.json({
     order: {
       id: orderId,
       public_token,
       price,
-    },
+      worker_status: workerText
+    }
   });
 }
