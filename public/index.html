@@ -6,6 +6,35 @@
 <title>Order X Link Post Engagement</title>
 
 <style>
+    /* Smooth theme transition (iOS style) */
+* {
+    transition: background-color 0.35s ease, 
+                color 0.35s ease, 
+                border-color 0.35s ease,
+                box-shadow 0.35s ease;
+}
+
+body {
+    transition: background-color 0.35s ease, color 0.35s ease;
+}
+
+.theme-toggle {
+    transition: background-color 0.35s ease, color 0.35s ease, transform 0.25s;
+}
+
+.theme-toggle:active {
+    transform: scale(0.78);
+}
+
+    /* Avoid white flash before theme loads */
+body {
+    visibility: hidden;
+}
+
+body.theme-ready {
+    visibility: visible;
+}
+
 /* DARK MODE SUPPORT FOR NOTE SMALL */
 body.dark .note-small {
     background:#1e222a !important;
@@ -382,6 +411,8 @@ function toggleTheme() {
         localStorage.setItem("themeMode", saved);
     }
     applyTheme(saved);
+    document.body.classList.add("theme-ready");
+
 })();
 
 let turnstileToken = "";
