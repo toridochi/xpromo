@@ -1,3 +1,4 @@
+// /functions/api/admin/orders.js
 import { verifyAdmin } from "./verify";
 
 export async function onRequestGet({ request, env }) {
