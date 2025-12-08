@@ -5,9 +5,12 @@ export async function onRequestPost({ request, env }) {
     post_link,
     package: pkg,
     contact,
-    note,
+    note,      // object: {posts:[], combo:{}, user_note:"..."}
     price
   } = data;
+
+  // 🔥 Convert note object thành JSON string để DB lưu đúng
+  const noteString = typeof note === "string" ? note : JSON.stringify(note);
 
   const public_token = crypto.randomUUID();
   const status = "pending_payment";
@@ -17,31 +20,31 @@ export async function onRequestPost({ request, env }) {
   const created_at = new Date().toISOString();
   const updated_at = created_at;
 
-  // 🔥 D1 Pages GIỐNG SQLITE: BẮT BUỘC phải RETURNING id
-  const stmt = env.DB.prepare(`
-    INSERT INTO orders
-      (post_link, package, contact, note, price, currency, pay_address, status, public_token, created_at, updated_at)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    RETURNING id;
-  `).bind(
-    post_link,
-    pkg,
-    contact,
-    note,
-    price,
-    currency,
-    pay_address,
-    status,
-    public_token,
-    created_at,
-    updated_at
-  );
+  const stmt = await env.DB
+    .prepare(
+      `INSERT INTO orders 
+        (post_link, package, contact, note, price, currency, pay_address, status, public_token, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+    )
+    .bind(
+      post_link,
+      pkg,
+      contact,
+      noteString,
+      price,
+      currency,
+      pay_address,
+      status,
+      public_token,
+      created_at,
+      updated_at
+    );
 
-  const row = await stmt.first(); // Lấy dòng có id
+  const result = await stmt.run();
 
   return Response.json({
     order: {
-      id: row.id,            // ⭐ Luôn có ID
+      id: result.lastRowId,
       public_token,
       price
     }
