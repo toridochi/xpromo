@@ -126,7 +126,7 @@ async function loadOrder() {
         return;
     }
 
-const res = await fetch(`/api/orders/status?id=${encodeURIComponent(id)}&t=${encodeURIComponent(t)}`);
+    const res = await fetch(`/api/orders/status?id=${encodeURIComponent(id)}&t=${encodeURIComponent(t)}`);
     const data = await res.json();
 
     if (!data.order) {
@@ -134,11 +134,8 @@ const res = await fetch(`/api/orders/status?id=${encodeURIComponent(id)}&t=${enc
         return;
     }
 
-    // Order ID = public_token (id từ URL)
-document.getElementById("order_id").innerText = id;
-
-// Price từ backend
-document.getElementById("total_amount").innerText = data.order.price;
+    document.getElementById("order_id").innerText = id;
+    document.getElementById("total_amount").innerText = data.order.price;
 }
 
 loadOrder();
@@ -149,9 +146,21 @@ function copyWallet() {
     alert("Wallet address copied!");
 }
 
-function confirmPaid() {
+async function confirmPaid() {
     const id = getQuery("id");
-    const t  = getQuery("t");
+
+    // 🟦 GỬI TỚI WORKER ĐỂ BOT TELEGRAM BÁO "USER PAID"
+    await fetch("https://polished-glade-ad1fa1.humada.workers.dev/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            type: "user_paid_click",
+            orderId: id
+        })
+    });
+
+    // 🟦 Sau đó tiếp tục flow cũ
+    const t = getQuery("t");
     window.location.href = `/order.html?id=${id}&t=${t}`;
 }
 </script>
