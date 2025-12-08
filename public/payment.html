@@ -148,21 +148,26 @@ function copyWallet() {
 
 async function confirmPaid() {
     const id = getQuery("id");
+    const t  = getQuery("t");
 
-    // 🟦 GỬI TỚI WORKER ĐỂ BOT TELEGRAM BÁO "USER PAID"
-    await fetch("https://polished-glade-ad1f.a1humada.workers.dev/", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-            type: "user_paid_click",
-            orderId: id
-        })
-    });
-
-    // 🟦 Sau đó tiếp tục flow cũ
-    const t = getQuery("t");
-    window.location.href = `/order.html?id=${id}&t=${t}`;
+    try {
+        // Gửi tín hiệu tới Worker để bot báo "USER PAID"
+        await fetch("https://polished-glade-ad1f.a1humada.workers.dev", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                type: "user_paid_click",
+                orderId: id
+            })
+        });
+    } catch (e) {
+        console.log("Worker error, but still redirect:", e);
+    } finally {
+        // 🚀 Luôn luôn chuyển sang trang order, kể cả Worker lỗi
+        window.location.href = `/order.html?id=${id}&t=${t}`;
+    }
 }
+
 </script>
 
 </body>
