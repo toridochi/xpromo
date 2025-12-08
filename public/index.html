@@ -383,7 +383,8 @@ if (!emailRegex.test(contact)) {
     const data = await res.json();
 
     // redirect to payment page
-    window.location.href = `/payment.html?id=${data.order.id}&t=${data.order.public_token}&amount=${updateTotal()}`;
+    window.location.href =
+  `/payment.html?id=${encodeURIComponent(data.order.id)}&t=${encodeURIComponent(data.order.public_token)}&amount=${updateTotal()}`;
 }
 
 
