@@ -6,6 +6,33 @@
 <title>Order X Link Post Engagement</title>
 
 <style>
+
+    /* Loading spinner inside button */
+.btn-loading {
+    position: relative;
+    pointer-events: none;
+    opacity: 0.85;
+}
+
+.btn-loading:after {
+    content: "";
+    position: absolute;
+    right: 16px;
+    top: 50%;
+    width: 16px;
+    height: 16px;
+    margin-top: -8px;
+    border: 2px solid white;
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+    
 /* ==================== BASE UI ==================== */
 
 body {
@@ -480,23 +507,42 @@ function updateTotal() {
 /* ==================== SUBMIT ORDER ==================== */
 
 async function submitOrder() {
+
+    // ENABLE loading UI
+    const btn = document.querySelector(".submit-btn");
+    btn.classList.add("btn-loading");
+    btn.disabled = true;
+
+    document.querySelectorAll("input, textarea, button").forEach(el => {
+        if (el !== btn) el.disabled = true;
+    });
+
     if (!turnstileToken) {
         alert("Please verify you are human.");
+
+        // restore
+        btn.classList.remove("btn-loading");
+        btn.disabled = false;
+        document.querySelectorAll("input, textarea, button").forEach(el => el.disabled = false);
+
         return;
     }
 
     const contact = document.getElementById("contact").value.trim();
 
-    // Validate email
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(contact)) {
         alert("Please enter a valid email address.");
         document.getElementById("contact").style.border = "2px solid red";
+
+        btn.classList.remove("btn-loading");
+        btn.disabled = false;
+        document.querySelectorAll("input, textarea, button").forEach(el => el.disabled = false);
+
         return;
     }
 
     const twitterRegex = /^https?:\/\/(x|twitter)\.com\/([A-Za-z0-9_]{1,50})\/status\/(\d+)$/;
-
     let posts = [];
 
     for (let i = 1; i <= postCount; i++) {
@@ -509,6 +555,11 @@ async function submitOrder() {
         if (!twitterRegex.test(link)) {
             alert(`Post #${i}: Invalid X/Twitter post URL.`);
             linkField.style.border = "2px solid red";
+
+            btn.classList.remove("btn-loading");
+            btn.disabled = false;
+            document.querySelectorAll("input, textarea, button").forEach(el => el.disabled = false);
+
             return;
         }
 
@@ -520,6 +571,11 @@ async function submitOrder() {
 
         if (!hasService) {
             alert(`Post #${i}: You must select at least one service.`);
+
+            btn.classList.remove("btn-loading");
+            btn.disabled = false;
+            document.querySelectorAll("input, textarea, button").forEach(el => el.disabled = false);
+
             return;
         }
 
@@ -562,6 +618,7 @@ async function submitOrder() {
     window.location.href =
         `/payment.html?id=${data.order.id}&t=${data.order.public_token}&amount=${data.order.price}`;
 }
+
 
 /* ==================== REMOVE POST ==================== */
 
