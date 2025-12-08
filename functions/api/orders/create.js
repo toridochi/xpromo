@@ -5,12 +5,16 @@ export async function onRequestPost({ request, env }) {
     post_link,
     package: pkg,
     contact,
-    note,      // object: {posts:[], combo:{}, user_note:"..."}
-    price
+    note,
+    price,
+    user_note    // frontend phải gửi user_note, nếu không gửi thì "".
   } = data;
 
-  // 🔥 Convert note object thành JSON string để DB lưu đúng
-  const noteString = typeof note === "string" ? note : JSON.stringify(note);
+  // --- FIX: đảm bảo user_note luôn nằm trong note object ---
+  let fixedNote = note || {};
+  fixedNote.user_note = user_note || fixedNote.user_note || "";
+
+  const noteString = JSON.stringify(fixedNote);
 
   const public_token = crypto.randomUUID();
   const status = "pending_payment";
@@ -20,8 +24,7 @@ export async function onRequestPost({ request, env }) {
   const created_at = new Date().toISOString();
   const updated_at = created_at;
 
-  const stmt = await env.DB
-    .prepare(
+  await env.DB.prepare(
       `INSERT INTO orders 
         (post_link, package, contact, note, price, currency, pay_address, status, public_token, created_at, updated_at)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
@@ -38,18 +41,17 @@ export async function onRequestPost({ request, env }) {
       public_token,
       created_at,
       updated_at
-    );
+    )
+    .run();
 
-  const result = await stmt.run();
+  const row = await env.DB.prepare(
+      "SELECT last_insert_rowid() AS id"
+    )
+    .first();
 
-// Lấy ID đúng chuẩn D1
-const row = await env.DB.prepare(
-  "SELECT last_insert_rowid() AS id"
-).first();
-
-return Response.json({
-  order: {
-    id: row.id,
+  return Response.json({
+    order: {
+      id: row.id,
       public_token,
       price
     }
