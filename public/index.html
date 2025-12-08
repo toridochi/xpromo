@@ -382,10 +382,11 @@ if (!emailRegex.test(contact)) {
 
     const data = await res.json();
 
-let orderId = data.order.public_token;
+let orderId = data.order.id;
 
 window.location.href =
   `/payment.html?id=${encodeURIComponent(orderId)}&t=${encodeURIComponent(data.order.public_token)}&amount=${updateTotal()}`;
+
 
 }
 
