@@ -134,8 +134,11 @@ async function loadOrder() {
         return;
     }
 
-    document.getElementById("order_id").innerText = data.order.id;
-    document.getElementById("total_amount").innerText = data.order.price;
+    // Order ID = public_token (id từ URL)
+document.getElementById("order_id").innerText = id;
+
+// Price từ backend
+document.getElementById("total_amount").innerText = data.order.price;
 }
 
 loadOrder();
