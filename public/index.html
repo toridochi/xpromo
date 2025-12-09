@@ -47,6 +47,23 @@
 
 
 <style>
+    .post-warning {
+    margin-top: 18px;
+    padding: 14px 16px;
+    background: #fff4d6;
+    border-left: 4px solid #ff9900;
+    border-radius: 8px;
+    font-size: 14px;
+    line-height: 1.45;
+    color: #7a4b00;
+}
+
+body.dark .post-warning {
+    background: #2a1f00 !important;
+    border-left-color: #ffb84d !important;
+    color: #ffd27b !important;
+}
+
 /* ===== ABOUT SECTION - BOOST VISIBILITY ===== */
 
 .about-section {
@@ -631,6 +648,10 @@ function addPostBox() {
                 Price: $14 per combo
             </div>
         </div>
+        <!-- ⚠️ INSERT WARNING HERE -->
+<div class="post-warning">
+    ⚠️ <b>Important:</b> When boosting a post with XPromo, please avoid using any other engagement services on the same post to prevent conflicts, warranty issues, or being flagged by X.
+</div>
     `;
 
     document.getElementById("posts_wrapper").appendChild(div);
